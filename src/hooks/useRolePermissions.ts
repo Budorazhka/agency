@@ -30,5 +30,6 @@ export function useRolePermissions() {
     canManagePartners: canDo('manage_partners', role),
     canAddLeadSource: canDo('add_lead_source', role),
     canViewLeadAnalytics: canDo('view_lead_analytics', role),
+    canManageProperties: canDo('manage_properties', role),
   }
 }

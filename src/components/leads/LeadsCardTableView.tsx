@@ -778,37 +778,24 @@ export function LeadsCardTableView({
                 {activeLead && (
                   <div className="w-full flex items-center justify-center gap-3 mb-3">
                     <button
-                      onClick={() => {
-                        dispatch({
-                          type: "ADD_LEAD_EVENT",
-                          leadId: activeLead.id,
-                          event: {
-                            id: `evt-${Date.now()}`,
-                            type: "call",
-                            timestamp: new Date().toISOString(),
-                            authorId: "lm-1",
-                            authorName: "Текущий Пользователь",
-                            payload: { comment: "Звонок совершён" },
-                          },
-                        })
-                      }}
-                      className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border border-[rgba(243,209,139,0.3)] bg-[rgba(18,45,36,0.7)] text-[#9bf2ce] hover:bg-[rgba(18,65,46,0.9)] hover:border-[rgba(155,242,206,0.5)] transition-colors"
+                      type="button"
+                      className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border border-[rgba(243,209,139,0.3)] bg-[rgba(18,45,36,0.7)] text-[rgba(243,225,188,0.85)] hover:bg-[rgba(18,65,46,0.9)] hover:border-[rgba(243,225,188,0.5)] transition-colors"
                       title="Позвонить"
                     >
                       <Phone className="size-4" />
                       <span className="text-[8px] uppercase tracking-widest font-bold">Звонок</span>
                     </button>
                     <button
-                      onClick={() => { setHistoryInitialMode("comment"); setHistoryOpen(true) }}
+                      type="button"
                       className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border border-[rgba(243,209,139,0.3)] bg-[rgba(18,45,36,0.7)] text-[rgba(243,225,188,0.85)] hover:bg-[rgba(18,65,46,0.9)] hover:border-[rgba(243,225,188,0.5)] transition-colors"
-                      title="Написать комментарий"
+                      title="Написать"
                     >
                       <MessageSquare className="size-4" />
                       <span className="text-[8px] uppercase tracking-widest font-bold">Написать</span>
                     </button>
                     <button
                       onClick={() => { setHistoryInitialMode("task"); setHistoryOpen(true) }}
-                      className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border border-[rgba(243,209,139,0.3)] bg-[rgba(18,45,36,0.7)] text-[#ffeab4] hover:bg-[rgba(18,65,46,0.9)] hover:border-[rgba(255,234,180,0.5)] transition-colors"
+                      className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border border-[rgba(243,209,139,0.3)] bg-[rgba(18,45,36,0.7)] text-[rgba(243,225,188,0.85)] hover:bg-[rgba(18,65,46,0.9)] hover:border-[rgba(243,225,188,0.5)] transition-colors"
                       title="Поставить задачу"
                     >
                       <ListTodo className="size-4" />

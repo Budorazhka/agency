@@ -36,6 +36,7 @@ export type PermissionAction =
   | 'set_substitute'        // Назначить подменного дежурного
   | 'view_lead_analytics'   // Аналитика лидов и рекламных кампаний
   | 'block_account'         // Блокировка аккаунтов сотрудников (только собственник)
+  | 'manage_properties'     // Добавление, редактирование и удаление объектов недвижимости
 
 /** Матрица прав: роль → список разрешённых действий */
 export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
@@ -52,6 +53,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'view_all_stages',
     'set_substitute',
     'view_lead_analytics',
+    'manage_properties',
     'block_account',
   ],
   director: [
@@ -66,6 +68,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'view_all_stages',
     'set_substitute',
     'view_lead_analytics',
+    'manage_properties',
   ],
   rop: [
     'change_distribution',
@@ -73,6 +76,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'view_all_stages',
     'set_substitute',
     'view_lead_analytics',
+    'manage_properties',
   ],
   marketer: [
     'view_lead_analytics',
@@ -81,6 +85,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
   ],
   manager: [
     'view_all_stages',
+    'manage_properties',
   ],
 }
 
@@ -99,4 +104,5 @@ export const PERMISSION_DENIED_REASON: Record<PermissionAction, string> = {
   set_substitute: 'Доступно с уровня РОПа',
   view_lead_analytics: 'Доступно с уровня РОПа и для Маркетолога',
   block_account: 'Только для Собственника',
+  manage_properties: 'Доступно с уровня Менеджера',
 }

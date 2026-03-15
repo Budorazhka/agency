@@ -12,6 +12,9 @@ import { FilterPanel } from './FilterPanel'
 import { ScopeToggle, type Scope } from './ScopeToggle'
 import { PropertyWizardDialog } from './PropertyWizardDialog'
 import { getConditionState } from './utils'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import type { FiltersState, PropertyCategory, PropertyWizardValues, SaleStatus } from './types'
 import { EMPTY_FILTERS } from './types'
 import '@/components/leads/leads-secret-table.css'
@@ -20,7 +23,7 @@ const PROPERTIES_STORAGE_KEY = 'agency.product.properties'
 
 export function MyPropertiesPage() {
   const navigate = useNavigate()
-  const { isManager } = useRolePermissions()
+  const { isManager, isMarketer } = useRolePermissions()
   const { currentUser } = useAuth()
 
   // ── UI state ───────────────────────────────────────────────────────────────
@@ -32,6 +35,7 @@ export function MyPropertiesPage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [filters, setFilters]       = useState<FiltersState>(EMPTY_FILTERS)
   const [alertFilter, setAlertFilter] = useState<AlertFilter>(null)
+  const [agentFilter, setAgentFilter] = useState<string | null>(null)
   const [wizardState, setWizardState] = useState<{
     open: boolean
     mode: 'create' | 'edit'
@@ -44,7 +48,7 @@ export function MyPropertiesPage() {
 
   // Scope: менеджер начинает с "мои", РОП+ сразу "все"
   const [scope, setScope] = useState<Scope>(isManager ? 'my' : 'all')
-  const readOnly  = isManager && scope === 'all'
+  const readOnly  = isMarketer || (isManager && scope === 'all')
   const isBulkMode = selectedIds.size > 0 && !readOnly
   const isArchive  = activeTab === 'archive'
 
@@ -74,6 +78,24 @@ export function MyPropertiesPage() {
       ? properties.filter((p) => p.agentId === currentUser?.id)
       : properties
   }, [properties, scope, currentUser])
+
+  /** Статистика менеджеров для фильтра РОП+ (только scope=all) */
+  const agentStats = useMemo(() => {
+    if (scope !== 'all') return []
+    const map = new Map<string, { agentId: string; agentName: string; total: number; overdue: number }>()
+    for (const p of scopedProperties) {
+      if (p.status === 'archive') continue
+      const entry = map.get(p.agentId)
+      const isOverdue = getConditionState(p.updatedAt) === 'needs_update'
+      if (entry) {
+        entry.total++
+        if (isOverdue) entry.overdue++
+      } else {
+        map.set(p.agentId, { agentId: p.agentId, agentName: p.agentName, total: 1, overdue: isOverdue ? 1 : 0 })
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.overdue - a.overdue)
+  }, [scopedProperties, scope])
 
   /** Счётчики для панели управления (только активные, не архив) */
   const alertCounts = useMemo(() => {
@@ -117,6 +139,9 @@ export function MyPropertiesPage() {
       )
     }
 
+    // Agent filter (только РОП+ в scope=all)
+    if (agentFilter) list = list.filter((p) => p.agentId === agentFilter)
+
     // Advanced filters
     if (filters.types.length)      list = list.filter((p) => filters.types.includes(p.type))
     if (filters.statuses.length)   list = list.filter((p) => filters.statuses.includes(p.status))
@@ -131,7 +156,7 @@ export function MyPropertiesPage() {
       const db = new Date(b.listedAt).getTime()
       return sortDesc ? db - da : da - db
     })
-  }, [scopedProperties, activeTab, alertFilter, search, sortDesc, filters, isArchive])
+  }, [scopedProperties, activeTab, alertFilter, agentFilter, search, sortDesc, filters, isArchive])
 
   const totalCount = scopedProperties.filter((p) => p.status !== 'archive').length
   const editingProperty = wizardState.propertyId
@@ -194,6 +219,7 @@ export function MyPropertiesPage() {
     setSearch('')
     setFilters(EMPTY_FILTERS)
     setAlertFilter(null)
+    setAgentFilter(null)
   }
 
   function handleAlertFilter(f: AlertFilter) {
@@ -295,6 +321,32 @@ export function MyPropertiesPage() {
         {/* ── Scope toggle (только для менеджера) ── */}
         {isManager && (
           <ScopeToggle scope={scope} onChange={handleScopeChange} />
+        )}
+
+        {/* ── Фильтр по менеджерам (РОП+ в scope=all) ── */}
+        {scope === 'all' && !isManager && agentStats.length > 0 && (
+          <Select value={agentFilter ?? 'all'} onValueChange={(v) => setAgentFilter(v === 'all' ? null : v)}>
+            <SelectTrigger className="h-9 w-64 rounded-xl border border-[rgba(242,207,141,0.2)] bg-[rgba(0,0,0,0.35)] text-sm text-[#fcecc8] shadow-none focus:ring-1 focus:ring-[rgba(242,207,141,0.2)] focus:border-[rgba(242,207,141,0.5)] [&>span]:text-[#fcecc8]">
+              <SelectValue placeholder="Все менеджеры" />
+            </SelectTrigger>
+            <SelectContent className="border-[rgba(242,207,141,0.2)] bg-[rgba(9,36,28,0.98)] text-[#fcecc8] backdrop-blur-sm">
+              <SelectItem value="all" className="text-[#fcecc8] focus:bg-[rgba(242,207,141,0.1)] focus:text-[#fcecc8]">
+                Все менеджеры
+              </SelectItem>
+              {agentStats.map((a) => (
+                <SelectItem key={a.agentId} value={a.agentId} className="text-[#fcecc8] focus:bg-[rgba(242,207,141,0.1)] focus:text-[#fcecc8]">
+                  <span className="flex items-center gap-2">
+                    {a.agentName}
+                    {a.overdue > 0 && (
+                      <span className="rounded-full bg-red-500/20 border border-red-500/30 px-1.5 text-[10px] font-semibold text-red-400">
+                        {a.overdue} просрочки
+                      </span>
+                    )}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
 
         {/* ── Обзор / быстрый фильтр ── */}

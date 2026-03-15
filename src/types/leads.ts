@@ -52,6 +52,8 @@ export interface Lead {
   taskOverdue?: boolean
   /** Оценка потенциальной комиссии по сделке (USD) */
   commissionUsd?: number
+  /** ID рекламной кампании (только для source === 'ad_campaigns') */
+  campaignId?: string
 }
 
 /** Единое облако лидов — пул по всем типам */

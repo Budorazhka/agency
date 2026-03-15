@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import {
   Eye, MousePointerClick, Target, Megaphone, Plus, Pencil, Trash2,
-  TrendingUp, TrendingDown, Pause, Play, Link, Copy, Check,
+  TrendingUp, TrendingDown, Pause, Play, Link, Copy, Check, Users, BarChart2,
 } from 'lucide-react'
 import { useLeads } from '@/context/LeadsContext'
 import { useRolePermissions } from '@/hooks/useRolePermissions'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
@@ -20,6 +21,7 @@ import {
   getCampaignSummary,
 } from './leadAnalyticsShared'
 import type { Campaign, CampaignChannel } from './leadAnalyticsShared'
+import { LEAD_STAGE_COLUMN, LEAD_STAGES } from '@/data/leads-mock'
 
 // ─── Style tokens ──────────────────────────────────────────────────────────────
 
@@ -35,12 +37,12 @@ const SELECT_CONTENT = 'border-[rgba(242,207,141,0.2)] bg-[rgba(9,36,28,0.98)] t
 
 // ─── KPI card ──────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, icon, trend }: {
-  label: string; value: string; sub?: string; icon: React.ReactNode; trend?: 'up' | 'down'
+function KpiCard({ label, value, sub, subTooltip, icon, trend }: {
+  label: string; value: string; sub?: string; subTooltip?: string; icon: React.ReactNode; trend?: 'up' | 'down'
 }) {
   return (
-    <div className="rounded-2xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.22)] p-5 space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="rounded-2xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.22)] p-5 flex flex-col items-center text-center gap-3">
+      <div className="flex items-center gap-2">
         <div className="flex size-10 items-center justify-center rounded-xl bg-[rgba(242,207,141,0.1)] text-[rgba(242,207,141,0.65)]">
           {icon}
         </div>
@@ -53,7 +55,18 @@ function KpiCard({ label, value, sub, icon, trend }: {
       <div>
         <p className="text-3xl font-bold text-[#fcecc8] tabular-nums">{value}</p>
         <p className="text-sm text-[rgba(242,207,141,0.55)] mt-1">{label}</p>
-        {sub && <p className="text-xs text-[rgba(242,207,141,0.35)] mt-0.5">{sub}</p>}
+        {sub && (subTooltip ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="text-xs text-[rgba(242,207,141,0.35)] mt-0.5 cursor-help underline decoration-dotted decoration-[rgba(242,207,141,0.25)] underline-offset-2">{sub}</p>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[220px] text-center text-xs">
+              {subTooltip}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <p className="text-xs text-[rgba(242,207,141,0.35)] mt-0.5">{sub}</p>
+        ))}
       </div>
     </div>
   )
@@ -236,11 +249,58 @@ function CampaignDialog({ open, campaign, onClose, onSave }: {
   )
 }
 
+// ─── Funnel row ────────────────────────────────────────────────────────────────
+
+function FunnelRow({ name, count, pct, targetLabel, isRejection }: {
+  name: string; count: number; pct: number; targetLabel: string | null; isRejection: boolean
+}) {
+  const isTarget = targetLabel !== null
+  return (
+    <div className={cn(
+      'rounded-lg px-3 py-2.5',
+      isTarget
+        ? 'border border-emerald-500/30 bg-emerald-500/10'
+        : 'border border-[rgba(242,207,141,0.08)] bg-[rgba(0,0,0,0.15)]',
+    )}>
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className={cn(
+            'text-xs truncate',
+            isTarget ? 'font-medium text-emerald-300' : isRejection ? 'text-red-300/80' : 'text-[rgba(242,207,141,0.7)]',
+          )}>{name}</span>
+          {targetLabel && (
+            <span className="shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+              {targetLabel}
+            </span>
+          )}
+        </div>
+        <span className={cn(
+          'shrink-0 text-xs tabular-nums font-bold',
+          isTarget ? 'text-emerald-300' : isRejection ? 'text-red-300/80' : 'text-[#fcecc8]',
+        )}>
+          {count}{' '}
+          <span className="font-normal text-[rgba(242,207,141,0.35)]">{pct}%</span>
+        </span>
+      </div>
+      <div className="h-1 w-full overflow-hidden rounded-full bg-[rgba(242,207,141,0.08)]">
+        <div
+          className={cn(
+            'h-full rounded-full transition-all',
+            isTarget ? 'bg-emerald-500/60' : isRejection ? 'bg-red-400/40' : 'bg-[rgba(242,207,141,0.3)]',
+          )}
+          style={{ width: `${Math.min(pct, 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 export function LeadAnalyticsTab() {
   const { canViewNetworkAnalytics } = useRolePermissions()
-  useLeads()
+  const { state } = useLeads()
+  const leadPool = state.leadPool
 
   const [campaigns, setCampaigns] = useState<Campaign[]>(INITIAL_CAMPAIGNS)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -265,6 +325,82 @@ export function LeadAnalyticsTab() {
     budgetUsedPct,
     activeCampaigns,
   } = useMemo(() => getCampaignSummary(campaigns), [campaigns])
+
+  const adLeads = useMemo(() => leadPool.filter(l => l.source === 'ad_campaigns'), [leadPool])
+
+  const adStats = useMemo(() => {
+    let inProgress = 0, success = 0, rejection = 0
+    for (const l of adLeads) {
+      const col = LEAD_STAGE_COLUMN[l.stageId]
+      if (col === 'in_progress') inProgress++
+      else if (col === 'success') success++
+      else rejection++
+    }
+    const total = adLeads.length
+    const convPct = total > 0 ? Math.round((success / total) * 100) : 0
+    const rejectPct = total > 0 ? Math.round((rejection / total) * 100) : 0
+    const poolPct = leadPool.length > 0 ? Math.round((total / leadPool.length) * 100) : 0
+    return { total, inProgress, success, rejection, convPct, rejectPct, poolPct }
+  }, [adLeads, leadPool])
+
+  const sourceBreakdown = useMemo(() => {
+    const total = leadPool.length
+    const primary = leadPool.filter(l => l.source === 'primary').length
+    const secondary = leadPool.filter(l => l.source === 'secondary').length
+    const other = leadPool.filter(l => l.source !== 'primary' && l.source !== 'secondary').length
+    return [
+      { label: 'Первичка',  count: primary,   pct: total > 0 ? Math.round(primary   / total * 100) : 0, color: 'bg-sky-400/50' },
+      { label: 'Вторичка',  count: secondary, pct: total > 0 ? Math.round(secondary / total * 100) : 0, color: 'bg-red-400/50' },
+      { label: 'Другое',    count: other,     pct: total > 0 ? Math.round(other     / total * 100) : 0, color: 'bg-[rgba(242,207,141,0.35)]' },
+    ]
+  }, [leadPool])
+
+  const weeklyTrend = useMemo(() => {
+    const WEEK = 7 * 24 * 60 * 60 * 1000
+    const now = Date.now()
+    return Array.from({ length: 6 }, (_, i) => {
+      const weekEnd = now - (5 - i) * WEEK
+      const weekStart = weekEnd - WEEK
+      const count = adLeads.filter(l => {
+        const t = new Date(l.createdAt).getTime()
+        return t >= weekStart && t < weekEnd
+      }).length
+      const label = new Date(weekStart).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+      return { label, count }
+    })
+  }, [adLeads])
+
+  const [funnelPeriod, setFunnelPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
+  const [funnelCampaign, setFunnelCampaign] = useState<string>('all')
+
+  const funnelLeads = useMemo(() => {
+    let leads = adLeads
+    if (funnelCampaign !== 'all') leads = leads.filter(l => l.campaignId === funnelCampaign)
+    if (funnelPeriod !== 'all') {
+      const days = funnelPeriod === '7d' ? 7 : funnelPeriod === '30d' ? 30 : 90
+      const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
+      leads = leads.filter(l => new Date(l.createdAt).getTime() >= cutoff)
+    }
+    return leads
+  }, [adLeads, funnelPeriod, funnelCampaign])
+
+  const conversionFunnel = useMemo(() => {
+    const newLeadsCount = funnelLeads.filter(l => l.stageId === 'new').length
+    const base = newLeadsCount || funnelLeads.length || 1
+    const funnelStages = LEAD_STAGES.filter(s => LEAD_STAGE_COLUMN[s.id] !== 'success')
+    return {
+      newLeadsCount,
+      total: funnelLeads.length,
+      stages: funnelStages.map(s => ({
+        id: s.id,
+        name: s.name,
+        column: LEAD_STAGE_COLUMN[s.id] as 'rejection' | 'in_progress',
+        count: funnelLeads.filter(l => l.stageId === s.id).length,
+        pct: Math.round(funnelLeads.filter(l => l.stageId === s.id).length / base * 100),
+        targetLabel: s.id === 'kp_sent' ? 'В рассылку' : s.id === 'deal' ? 'В сделку' : null,
+      })),
+    }
+  }, [funnelLeads])
 
   return (
     <div className="space-y-10">
@@ -361,6 +497,191 @@ export function LeadAnalyticsTab() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Аналитика лидов ── */}
+      <section className="space-y-4">
+        <p className={SECTION_LABEL}>Аналитика лидов</p>
+
+        {/* KPI по рекламным лидам */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            label="Лидов с рекламы"
+            value={String(adStats.total)}
+            sub={`${adStats.poolPct}% от всего пула`}
+            icon={<Users className="size-5" />}
+          />
+          <KpiCard
+            label="В работе"
+            value={String(adStats.inProgress)}
+            sub={`${adStats.total > 0 ? Math.round((adStats.inProgress / adStats.total) * 100) : 0}% рекламных лидов`}
+            icon={<TrendingUp className="size-5" />}
+            trend="up"
+          />
+          <KpiCard
+            label="Дошли до сделки"
+            value={String(adStats.success)}
+            sub={`Конверсия ${adStats.convPct}%`}
+            subTooltip="Доля рекламных лидов, достигших стадии «Золотой фонд» и выше — клиенты, с которыми уже заключена сделка или поддерживаются долгосрочные отношения"
+            icon={<Check className="size-5" />}
+            trend={adStats.success > 0 ? 'up' : undefined}
+          />
+          <KpiCard
+            label="Отказы"
+            value={String(adStats.rejection)}
+            sub={`Брак ${adStats.rejectPct}%`}
+            icon={<TrendingDown className="size-5" />}
+            trend={adStats.rejectPct > 30 ? 'down' : undefined}
+          />
+        </div>
+
+        {/* Источники + тренд */}
+        <div className="grid gap-4 lg:grid-cols-2">
+
+          {/* Источники лидов */}
+          <div className={cn(PANEL, 'p-6 space-y-4')}>
+            <div className="flex items-center gap-2">
+              <BarChart2 className="size-4 text-[rgba(242,207,141,0.5)]" />
+              <p className="text-sm font-semibold text-[#fcecc8]">Источники лидов</p>
+            </div>
+            <div className="space-y-3">
+              {sourceBreakdown.map(({ label, count, pct, color }) => (
+                <div key={label}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm text-[rgba(242,207,141,0.7)]">{label}</span>
+                    <span className="text-sm tabular-nums font-semibold text-[#fcecc8]">
+                      {count}{' '}
+                      <span className="text-xs font-normal text-[rgba(242,207,141,0.4)]">({pct}%)</span>
+                    </span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[rgba(242,207,141,0.08)]">
+                    <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Недельный тренд */}
+          <div className={cn(PANEL, 'p-6 space-y-4')}>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="size-4 text-[rgba(242,207,141,0.5)]" />
+              <p className="text-sm font-semibold text-[#fcecc8]">Поступление рекламных лидов</p>
+            </div>
+            <div className="flex items-end gap-2" style={{ height: 80 }}>
+              {weeklyTrend.map(({ label, count }, i) => {
+                const max = Math.max(...weeklyTrend.map(w => w.count), 1)
+                const heightPct = Math.round((count / max) * 100)
+                return (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                    <span className="text-[11px] tabular-nums text-[rgba(242,207,141,0.5)]">{count || ''}</span>
+                    <div className="flex w-full items-end rounded-t" style={{ height: 52 }}>
+                      <div
+                        className="w-full rounded-t-md bg-[rgba(242,207,141,0.25)] hover:bg-[rgba(242,207,141,0.4)] transition-colors"
+                        style={{ height: `${heightPct}%`, minHeight: count > 0 ? 3 : 0 }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-[rgba(242,207,141,0.3)] text-center leading-tight whitespace-nowrap">{label}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className={cn('text-xs', MUTED)}>Последние 6 недель · лиды с рекламных кампаний</p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── Конструктор конверсий ── */}
+      <section className="space-y-4">
+        <p className={SECTION_LABEL}>Конструктор конверсий</p>
+        <div className={cn(PANEL, 'p-5 space-y-4')}>
+
+          {/* Шапка с фильтрами */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-[#fcecc8]">Воронка рекламных лидов</p>
+              <p className="mt-0.5 text-xs text-[rgba(242,207,141,0.35)]">{conversionFunnel.total} лидов в выборке</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Период */}
+              {(['7d', '30d', '90d', 'all'] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setFunnelPeriod(p)}
+                  className={cn(
+                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    funnelPeriod === p
+                      ? 'border-[rgba(242,207,141,0.4)] bg-[rgba(242,207,141,0.12)] text-[#fcecc8]'
+                      : 'border-[rgba(242,207,141,0.12)] text-[rgba(242,207,141,0.45)] hover:border-[rgba(242,207,141,0.25)] hover:text-[rgba(242,207,141,0.7)]',
+                  )}
+                >
+                  {{ '7d': '7 дней', '30d': '30 дней', '90d': '90 дней', all: 'Всё' }[p]}
+                </button>
+              ))}
+              {/* Кампания */}
+              <Select value={funnelCampaign} onValueChange={setFunnelCampaign}>
+                <SelectTrigger className={cn(SELECT_TRIGGER, 'h-7 text-xs px-3 min-w-[140px]')}>
+                  <SelectValue placeholder="Все кампании" />
+                </SelectTrigger>
+                <SelectContent className={SELECT_CONTENT}>
+                  <SelectItem value="all" className="text-[#fcecc8] focus:bg-[rgba(242,207,141,0.1)] focus:text-[#fcecc8]">Все кампании</SelectItem>
+                  {campaigns.map(c => (
+                    <SelectItem key={c.id} value={c.id} className="text-[#fcecc8] focus:bg-[rgba(242,207,141,0.1)] focus:text-[#fcecc8]">
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Старт */}
+          <div className="flex items-center justify-between rounded-xl border border-[rgba(242,207,141,0.25)] bg-[rgba(242,207,141,0.06)] px-4 py-3">
+            <span className="text-sm font-semibold text-[#fcecc8]">Новый лид</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xl font-bold tabular-nums text-[#fcecc8]">{conversionFunnel.newLeadsCount}</span>
+              <span className="rounded-full border border-[rgba(242,207,141,0.2)] px-2.5 py-0.5 text-xs text-[rgba(242,207,141,0.4)]">100% · база</span>
+            </div>
+          </div>
+
+          {/* Две колонки */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-red-400/60">Негативные</p>
+              {conversionFunnel.stages.filter(s => s.column === 'rejection').map(s => (
+                <FunnelRow key={s.id} {...s} isRejection={true} />
+              ))}
+            </div>
+            <div className="space-y-1.5">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-emerald-400/60">В работе</p>
+              {conversionFunnel.stages.filter(s => s.column === 'in_progress' && s.id !== 'new').map(s => (
+                <FunnelRow key={s.id} {...s} isRejection={false} />
+              ))}
+            </div>
+          </div>
+
+          {/* Итог: целевые конверсии */}
+          <div className="grid grid-cols-2 gap-3 border-t border-[rgba(242,207,141,0.1)] pt-3">
+            {(['kp_sent', 'deal'] as const).map(targetId => {
+              const s = conversionFunnel.stages.find(x => x.id === targetId)
+              if (!s) return null
+              return (
+                <div key={targetId} className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+                  <div>
+                    <p className="text-xs font-bold text-emerald-300">{s.targetLabel}</p>
+                    <p className="mt-0.5 text-[11px] text-[rgba(242,207,141,0.4)]">{s.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold tabular-nums text-emerald-300">{s.count}</p>
+                    <p className="text-[11px] text-emerald-400/60">{s.pct}% конверсия</p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>

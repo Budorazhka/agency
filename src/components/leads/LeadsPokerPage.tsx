@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { hasLeadAdminAccess } from '@/lib/portal-user'
+import { useRolePermissions } from '@/hooks/useRolePermissions'
 import { LeadsCardTableView } from './LeadsCardTableView'
 import { ShieldX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button'
 /** Покерный стол лидов — отдельная полноэкранная страница. */
 export function LeadsPokerPage() {
   const navigate = useNavigate()
-  const hasAccess = hasLeadAdminAccess()
+  const { isMarketer } = useRolePermissions()
   const [selectedManagerId, setSelectedManagerId] = useState<string>('_all')
 
-  if (!hasAccess) {
+  if (isMarketer) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-[#093b30]">
         <div className="flex max-w-sm flex-col items-center gap-5 rounded-2xl border border-[rgba(242,207,141,0.3)] bg-[rgba(18,45,36,0.95)] px-10 py-12 text-center shadow-lg">

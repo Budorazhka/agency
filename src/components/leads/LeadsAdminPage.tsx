@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ShieldX, BarChart2, ArrowLeft, ArrowRight, Layers, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
+import { ShieldX, ArrowLeft, ArrowRight, Layers, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import './leads-secret-table.css'
 import { Button } from '@/components/ui/button'
@@ -7,7 +7,6 @@ import { LeadAnalyticsTab } from './LeadAnalyticsTab'
 import { useRolePermissions } from '@/hooks/useRolePermissions'
 import { useAuth } from '@/context/AuthContext'
 import { useLeads } from '@/context/LeadsContext'
-import { useState } from 'react'
 
 const LEADS_WORKSPACE_HERO = `${import.meta.env.BASE_URL}ff6dd1b2-a0c7-4100-b51c-49d5cc39f05f.png`
 
@@ -39,38 +38,11 @@ function ManagerLeadsView() {
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const { state } = useLeads()
-  const [showAnalytics, setShowAnalytics] = useState(false)
 
   const myLeads = state.leadPool.filter((l) => l.managerId === currentUser?.id)
   const overdueCount = myLeads.filter((l) => l.taskOverdue).length
   const withTaskCount = myLeads.filter((l) => l.hasTask).length
   const newCount = myLeads.filter((l) => l.stageId === 'new' || l.stageId === 'contact').length
-
-  if (showAnalytics) {
-    return (
-      <div className="leads-page-root -m-6 min-h-[calc(100vh+3rem)] lg:-m-8 lg:min-h-[calc(100vh+4rem)]">
-        <div className="leads-page-bg" aria-hidden />
-        <div className="leads-page-ornament" aria-hidden />
-        <div className="leads-page relative z-10 space-y-6 p-6 lg:p-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => setShowAnalytics(false)}
-              className="gap-2 text-[rgba(242,207,141,0.7)] hover:text-[#fcecc8] hover:bg-transparent"
-            >
-              <ArrowLeft className="size-4" />
-              Назад
-            </Button>
-            <Header
-              title="Моя МЛМ-аналитика"
-              breadcrumbs={[{ label: 'Обзор', href: '/dashboard' }, { label: 'Мои лиды', href: '/dashboard/leads' }, { label: 'МЛМ-аналитика' }]}
-            />
-          </div>
-          <LeadAnalyticsTab />
-        </div>
-      </div>
-    )
-  }
 
   const firstName = currentUser?.name?.split(' ')[0] ?? 'Менеджер'
 
@@ -129,27 +101,10 @@ function ManagerLeadsView() {
           </div>
         </div>
 
-        <div className="space-y-4 max-w-5xl">
-          <PokerHeroCard
-            title="Открыть рабочую область"
-            onClick={() => navigate('/dashboard/leads/poker')}
-          />
-          <button
-            onClick={() => setShowAnalytics(true)}
-            className="group w-full rounded-2xl border border-[rgba(242,207,141,0.18)] bg-[rgba(10,30,22,0.5)] p-6 text-left transition-colors hover:border-[rgba(242,207,141,0.35)] hover:bg-[rgba(242,207,141,0.06)]"
-          >
-            <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-[rgba(242,207,141,0.18)] bg-[rgba(242,207,141,0.05)]">
-              <BarChart2 className="size-6 text-[rgba(242,207,141,0.6)]" />
-            </div>
-            <h3 className="text-base font-bold text-[rgba(242,207,141,0.8)]">Моя МЛМ-аналитика</h3>
-            <p className="mt-1 text-sm text-[rgba(242,207,141,0.4)]">
-              Воронка, KPI и динамика по моим лидам
-            </p>
-            <div className="mt-4 text-xs font-semibold text-[rgba(242,207,141,0.4)] group-hover:text-[rgba(242,207,141,0.7)]">
-              Открыть →
-            </div>
-          </button>
-        </div>
+        <PokerHeroCard
+          title="Открыть рабочую область"
+          onClick={() => navigate('/dashboard/leads/poker')}
+        />
       </div>
     </div>
   )

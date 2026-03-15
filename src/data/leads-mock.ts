@@ -116,6 +116,8 @@ const MOCK_NAMES = [
   'Светлана Орлова', 'Артём Жуков', 'Ирина Белова', 'Роман Крылов', 'Юлия Комарова',
 ]
 
+const AD_CAMPAIGN_IDS = ['ac1', 'ac2', 'ac3', 'ac4', 'ac5', 'ac6']
+
 function createMockLeads(): Lead[] {
   const now = new Date()
   const leads: Lead[] = []
@@ -123,11 +125,12 @@ function createMockLeads(): Lead[] {
   const allStageIds = LEAD_STAGES.map((s) => s.id)
   const managers = ['lm-1', 'lm-2', 'lm-3', 'lm-4', 'lm-5', null]
   const channels: NonNullable<Lead['channel']>[] = ['form', 'ad', 'partner', 'other']
+  let adLeadIdx = 0
 
   for (let i = 0; i < 120; i++) {
     const d = new Date(now)
-    d.setHours(d.getHours() - (i % 48))
-    d.setDate(d.getDate() - Math.floor(i / 48))
+    d.setDate(d.getDate() - Math.floor(i * 56 / 120))
+    d.setHours(i % 24)
     const source = sources[i % 4]
     const stageId = allStageIds[i % allStageIds.length]
     const managerId = managers[i % 6]
@@ -162,6 +165,7 @@ function createMockLeads(): Lead[] {
       taskOverdue,
       commissionUsd,
       channel: channels[i % 4],
+      ...(source === 'ad_campaigns' ? { campaignId: AD_CAMPAIGN_IDS[adLeadIdx++ % AD_CAMPAIGN_IDS.length] } : {}),
     })
   }
 
@@ -185,6 +189,7 @@ function createMockLeads(): Lead[] {
       taskOverdue: false,
       commissionUsd: 1800 + j * 650,
       channel: channels[(j + 2) % 4],
+      ...(source === 'ad_campaigns' ? { campaignId: AD_CAMPAIGN_IDS[adLeadIdx++ % AD_CAMPAIGN_IDS.length] } : {}),
     })
   }
 

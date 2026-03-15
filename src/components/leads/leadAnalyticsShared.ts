@@ -32,7 +32,6 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
   { id: 'ac2', name: 'ЖК Премьер — Ретаргет', channel: 'ВКонтакте', budget: 60_000, spent: 42_000, impressions: 87_000, clicks: 1_950, leads: 74, status: 'active', startDate: '2026-02-10', utmSource: 'vk', utmMedium: 'retarget', utmCampaign: 'jk-premier' },
   { id: 'ac3', name: 'Вторичка — Look-alike', channel: 'Meta (Instagram/Facebook)', budget: 55_000, spent: 38_200, impressions: 210_000, clicks: 4_100, leads: 96, status: 'active', startDate: '2026-02-05', utmSource: 'instagram', utmMedium: 'cpm', utmCampaign: 'vtorichka-ig' },
   { id: 'ac4', name: 'Сторис — Новостройки', channel: 'Meta (Instagram/Facebook)', budget: 40_000, spent: 28_600, impressions: 161_000, clicks: 2_980, leads: 61, status: 'paused', startDate: '2026-01-15', utmSource: 'instagram', utmMedium: 'stories', utmCampaign: 'novostroyki-stories' },
-  { id: 'ac5', name: 'Аренда — Поиск', channel: 'Яндекс.Директ', budget: 50_000, spent: 31_200, impressions: 45_000, clicks: 1_100, leads: 55, status: 'active', startDate: '2026-02-20', utmSource: 'yandex', utmMedium: 'cpc', utmCampaign: 'arenda' },
   { id: 'ac6', name: 'Брендовый — Google Ads', channel: 'Google', budget: 30_000, spent: 18_900, impressions: 33_000, clicks: 2_800, leads: 112, status: 'ended', startDate: '2025-12-01', endDate: '2026-01-31', utmSource: 'google', utmMedium: 'cpc', utmCampaign: 'brand' },
 ]
 
