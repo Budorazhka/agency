@@ -1,4 +1,4 @@
-import { FileText, TrendingUp, Zap } from 'lucide-react'
+import { FileText, TrendingUp } from 'lucide-react'
 
 interface UsageBarProps {
   label: string
@@ -33,11 +33,11 @@ function UsageBar({ label, used, total, icon }: UsageBarProps) {
 }
 
 const HISTORY = [
-  { date: '01.02.2026', amount: '4 990 ₽', status: 'Оплачено', id: 'inv-006' },
-  { date: '01.01.2026', amount: '4 990 ₽', status: 'Оплачено', id: 'inv-005' },
-  { date: '01.12.2025', amount: '4 990 ₽', status: 'Оплачено', id: 'inv-004' },
-  { date: '01.11.2025', amount: '4 990 ₽', status: 'Оплачено', id: 'inv-003' },
-  { date: '01.10.2025', amount: '3 490 ₽', status: 'Оплачено', id: 'inv-002' },
+  { date: '01.02.2026', amount: '54 $', status: 'Оплачено', id: 'inv-006' },
+  { date: '01.01.2026', amount: '54 $', status: 'Оплачено', id: 'inv-005' },
+  { date: '01.12.2025', amount: '54 $', status: 'Оплачено', id: 'inv-004' },
+  { date: '01.11.2025', amount: '54 $', status: 'Оплачено', id: 'inv-003' },
+  { date: '01.10.2025', amount: '38 $', status: 'Оплачено', id: 'inv-002' },
 ]
 
 export function BillingTab() {
@@ -58,7 +58,7 @@ export function BillingTab() {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-[#fcecc8]">4 990 ₽</p>
+            <p className="text-2xl font-bold text-[#fcecc8]">54 $</p>
             <p className="text-xs text-[rgba(242,207,141,0.45)]">в месяц</p>
           </div>
         </div>
@@ -80,7 +80,6 @@ export function BillingTab() {
         <div className="rounded-xl border border-[rgba(242,207,141,0.12)] bg-[rgba(0,0,0,0.15)] p-5 space-y-5">
           <UsageBar label="Объекты"     used={26}    total={100}  icon={<TrendingUp className="size-3.5" />} />
           <UsageBar label="Менеджеры"   used={4}     total={10}   icon={<span className="text-xs">👤</span>} />
-          <UsageBar label="API-запросов (мес.)" used={1240} total={5000} icon={<Zap className="size-3.5" />} />
         </div>
       </div>
 

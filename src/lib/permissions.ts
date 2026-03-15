@@ -34,6 +34,7 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   owner: 'Собственник',
   director: 'Директор',
   rop: 'РОП',
+  marketer: 'Маркетолог',
   manager: 'Менеджер',
 }
 
@@ -42,6 +43,7 @@ export const ROLE_COLOR: Record<UserRole, string> = {
   owner: 'text-amber-400 bg-amber-400/10 border-amber-400/30',
   director: 'text-blue-400 bg-blue-400/10 border-blue-400/30',
   rop: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30',
+  marketer: 'text-violet-400 bg-violet-400/10 border-violet-400/30',
   manager: 'text-slate-400 bg-slate-400/10 border-slate-400/30',
 }
 

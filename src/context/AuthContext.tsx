@@ -50,6 +50,17 @@ export const MOCK_USERS: (CurrentUser & { password: string })[] = [
     avatarUrl: undefined,
   },
   {
+    id: 'u-marketer',
+    name: 'Олег Маркетов',
+    login: 'marketer',
+    password: '1',
+    role: 'marketer',
+    accountType: 'agency',
+    companyId: 'c1',
+    companyName: 'Estate Group',
+    avatarUrl: undefined,
+  },
+  {
     id: 'u5',
     name: 'Админ Системы',
     login: 'admin',
@@ -62,12 +73,16 @@ export const MOCK_USERS: (CurrentUser & { password: string })[] = [
   },
 ]
 
+export type LoginResult = 'ok' | 'blocked' | 'invalid'
+
 interface AuthContextValue {
   currentUser: CurrentUser | null
-  login: (login: string, password: string) => boolean
+  login: (login: string, password: string) => LoginResult
   /** Войти в кабинет как выбранный тип и роль (демо, без пароля) */
   enterAs: (accountType: AccountType, role: UserRole) => void
   logout: () => void
+  toggleBlockUser: (userId: string) => void
+  isUserBlocked: (userId: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -82,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null
     }
   })
+  const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     try {
@@ -95,18 +111,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [currentUser])
 
-  function login(login: string, password: string): boolean {
+  function login(login: string, password: string): LoginResult {
     const normalizedLogin = login.trim().toLowerCase()
     const found = MOCK_USERS.find(
       (u) => u.login.toLowerCase() === normalizedLogin && u.password === password,
     )
-    if (found) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _pw, ...user } = found
-      setCurrentUser(user)
-      return true
-    }
-    return false
+    if (!found) return 'invalid'
+    if (blockedUserIds.has(found.id)) return 'blocked'
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _pw, ...user } = found
+    setCurrentUser(user)
+    return 'ok'
+  }
+
+  function toggleBlockUser(userId: string) {
+    setBlockedUserIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(userId)) next.delete(userId)
+      else next.add(userId)
+      return next
+    })
+  }
+
+  function isUserBlocked(userId: string): boolean {
+    return blockedUserIds.has(userId)
   }
 
   function enterAs(accountType: AccountType, role: UserRole) {
@@ -139,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, login, enterAs, logout }}>
+    <AuthContext.Provider value={{ currentUser, login, enterAs, logout, toggleBlockUser, isUserBlocked }}>
       {children}
     </AuthContext.Provider>
   )

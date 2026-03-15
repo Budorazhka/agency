@@ -66,8 +66,8 @@ export function SettingsPage() {
         {/* Body: sidebar + content */}
         <div className="flex gap-8 items-start">
 
-          {/* Sidebar */}
-          <nav className="w-52 shrink-0 space-y-0.5">
+          {/* Sidebar — в том же стиле, что и блоки контента */}
+          <nav className="w-52 shrink-0 rounded-xl border border-[rgba(242,207,141,0.12)] bg-[rgba(0,0,0,0.15)] p-2">
             {visibleItems.map((item, idx) => {
               const showSep = item.separator && idx > 0
               return (
@@ -78,15 +78,14 @@ export function SettingsPage() {
                   <button
                     onClick={() => setActiveSection(item.id)}
                     className={cn(
-                      'group relative w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all text-left',
+                      'group relative w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all text-left',
                       resolvedSection === item.id
-                        ? 'bg-[rgba(242,207,141,0.1)] text-[#fcecc8]'
+                        ? 'bg-[rgba(242,207,141,0.12)] text-[#fcecc8]'
                         : 'text-[rgba(242,207,141,0.5)] hover:bg-[rgba(242,207,141,0.06)] hover:text-[rgba(242,207,141,0.8)]'
                     )}
                   >
-                    {/* Active indicator */}
                     {resolvedSection === item.id && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-[rgba(242,207,141,0.7)]" />
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-[rgba(242,207,141,0.6)]" />
                     )}
                     <span className={cn(
                       'transition-colors',

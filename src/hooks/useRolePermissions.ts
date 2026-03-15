@@ -13,6 +13,7 @@ export function useRolePermissions() {
   return {
     role,
     isManager: role === 'manager',
+    isMarketer: role === 'marketer',
     isRop: role === 'rop',
     isDirector: role === 'director',
     isOwner: role === 'owner',
@@ -28,5 +29,6 @@ export function useRolePermissions() {
     canViewNetworkAnalytics: canDo('view_network_analytics', role),
     canManagePartners: canDo('manage_partners', role),
     canAddLeadSource: canDo('add_lead_source', role),
+    canViewLeadAnalytics: canDo('view_lead_analytics', role),
   }
 }

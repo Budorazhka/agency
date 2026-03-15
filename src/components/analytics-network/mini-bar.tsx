@@ -16,7 +16,7 @@ interface MiniBarProps {
 export function MiniBar({
     value,
     maxValue,
-    color = "bg-blue-500",
+    color = "bg-emerald-500",
     className,
     showValue = true
 }: MiniBarProps) {
@@ -25,7 +25,7 @@ export function MiniBar({
     return (
         <div className={cn("flex items-center gap-2", className)}>
             {showValue && (
-                <span className="min-w-0 text-sm font-medium text-right sm:min-w-[2rem]">
+                <span className="min-w-0 text-sm font-semibold text-slate-900 text-right tabular-nums sm:min-w-[2rem]">
                     {value.toLocaleString("ru-RU")}
                 </span>
             )}

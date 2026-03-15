@@ -34,7 +34,7 @@ type DeckFilter = 'all' | 'hot' | 'budget_5000' | 'stale_2h'
 const DECK_FILTER_OPTIONS: Array<{ value: DeckFilter; label: string }> = [
   { value: 'all', label: 'Все' },
   { value: 'hot', label: 'Горячие' },
-  { value: 'budget_5000', label: '>$5000' },
+  { value: 'budget_5000', label: 'Комиссия > $5 000' },
   { value: 'stale_2h', label: '2ч+' },
 ]
 
@@ -172,10 +172,6 @@ function getLeadHotScore(lead: Lead, nowTs: number): number {
   else if (budget >= HOT_BUDGET_USD) score += 1
 
   if (lead.taskOverdue) score += 2
-  else if (lead.hasTask === false) score += 1
-
-  if (lead.source === 'ad_campaigns') score += 1
-  if (lead.channel === 'ad') score += 1
 
   if (ageMs !== null && ageMs >= VERY_STALE_LEAD_THRESHOLD_MS) score += 2
   else if (ageMs !== null && ageMs >= STALE_LEAD_THRESHOLD_MS) score += 1
@@ -737,7 +733,17 @@ export function LeadsSecretDistributionDialog({
                       Горячие: {hotLeadsCount}
                     </>
                   }
-                  hint='Горячие лиды по внутреннему скору: бюджет, просрочка/отсутствие задачи, источник, канал и "возраст" лида.'
+                  hint={
+                    <span className="block space-y-2">
+                      <strong>Горячие лиды (score ≥ 2)</strong> — считаются по скору:
+                      <ul className="list-disc pl-4 space-y-1 mt-1">
+                        <li>Комиссия от $5 000 по сделке</li>
+                        <li>2ч+ без разбора (лид давно в очереди)</li>
+                        <li>Просрочка по задаче</li>
+                      </ul>
+                      Чем выше скор, тем приоритетнее лид для раздачи.
+                    </span>
+                  }
                 />
                 <HoverHint
                   className="secret-hud-metric"
@@ -813,7 +819,7 @@ export function LeadsSecretDistributionDialog({
                             <span className="secret-card-front-name">{activeDeckLead.name ?? activeDeckLead.id}</span>
                             <div className="secret-card-front-facts">
                               <span>
-                                <strong>Бюджет</strong>
+                                <strong>Комиссия</strong>
                                 {formatLeadBudget(activeDeckLead)}
                               </span>
                               <span>
@@ -1066,7 +1072,7 @@ export function LeadsSecretDistributionDialog({
                             {SOURCE_LABELS[selectedLead.source]} · {selectedLeadStage}
                           </p>
                           <p className="secret-felt-summary-sub">
-                            Бюджет: {formatLeadBudget(selectedLead)} · {getLeadChannelLabel(selectedLead)}
+                            Комиссия: {formatLeadBudget(selectedLead)} · {getLeadChannelLabel(selectedLead)}
                           </p>
                           <p className="secret-felt-summary-sub">ID: {selectedLead.id}</p>
                         </div>
@@ -1137,7 +1143,7 @@ export function LeadsSecretDistributionDialog({
                             <span className="secret-card-front-name">{activeDeckLead.name ?? activeDeckLead.id}</span>
                             <div className="secret-card-front-facts">
                               <span>
-                                <strong>Бюджет</strong>
+                                <strong>Комиссия</strong>
                                 {formatLeadBudget(activeDeckLead)}
                               </span>
                               <span>
@@ -1220,7 +1226,7 @@ export function LeadsSecretDistributionDialog({
                             <th>Клиент</th>
                             <th>Телефон</th>
                             <th>Тип</th>
-                            <th>Бюджет</th>
+                            <th>Комиссия</th>
                             <th>Метки</th>
                             <th />
                           </tr>
@@ -1279,10 +1285,15 @@ export function LeadsSecretDistributionDialog({
                 <aside className="secret-side-panel" style={{ zIndex: STACK_ORDER.modal }}>
                   <div className="secret-side-card">
                     <p className="secret-side-title">Правила</p>
-                    <p className="secret-rule-line">
-                      <Flame className="size-4" />
-                      Горячие (score ≥ {HOT_MIN_SCORE}): бюджет от ${HOT_BUDGET_USD}, 2ч+ без разбора, просрочка задач, рекламный канал/источник.
-                    </p>
+                    <div className="secret-rule-line">
+                      <Flame className="size-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold mb-1">Горячие (score ≥ {HOT_MIN_SCORE})</p>
+                        <p className="text-sm opacity-90">
+                          Комиссия от $${HOT_BUDGET_USD.toLocaleString('ru-RU')}, 2ч+ без разбора, просрочка по задаче. Чем выше скор, тем приоритетнее лид.
+                        </p>
+                      </div>
+                    </div>
                     <p className="secret-rule-line">
                       <ShieldAlert className="size-4" />
                       В очереди только лиды со статусом «Новый лид».

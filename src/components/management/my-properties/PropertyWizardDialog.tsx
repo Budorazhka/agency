@@ -868,7 +868,7 @@ export function PropertyWizardDialog({
           </FieldShell>
         )}
 
-        <FieldShell label="Описание" required hint="Этот текст можно использовать и в витрине, и во внутренней карточке">
+        <FieldShell label="Описание" required>
           <WizardTextArea
             value={values.description}
             onChange={(value) => updateValue('description', value)}
@@ -962,21 +962,10 @@ export function PropertyWizardDialog({
                 />
               </FieldShell>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <FieldShell label="Локация на карте" hint="Район, ЖК или понятный ориентир">
-                  <Input
-                    value={values.mapLocationLabel}
-                    onChange={(event) => updateValue('mapLocationLabel', event.target.value)}
-                    placeholder="Например: Ваке, рядом с парком"
-                    className={FIELD_CLASS}
-                  />
-                </FieldShell>
-
-                <div className="rounded-[18px] border border-[rgba(242,207,141,0.12)] bg-[rgba(5,20,16,0.36)] px-3.5 py-3">
+              <div className="rounded-[18px] border border-[rgba(242,207,141,0.12)] bg-[rgba(5,20,16,0.36)] px-3.5 py-3">
                   <div className="text-[11px] uppercase tracking-[0.14em] text-[rgba(242,207,141,0.34)]">Координаты</div>
                   <div className="mt-2 text-[13px] font-semibold text-[#fcecc8]">{mapCoordinatesLabel}</div>
                   <div className="mt-1 text-[12px] text-[rgba(242,207,141,0.46)]">{mapLocationLabel}</div>
-                </div>
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -1462,12 +1451,12 @@ export function PropertyWizardDialog({
         className="top-[50%] h-[calc(100vh-24px)] w-[calc(100vw-10px)] max-w-none border-none bg-transparent p-0 shadow-none sm:top-[50%] sm:h-[calc(100vh-28px)] sm:w-[calc(100vw-20px)] sm:max-w-none xl:w-[calc(100vw-32px)]"
       >
         <div className="relative h-full overflow-hidden rounded-[28px] border border-[rgba(242,207,141,0.16)] bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.12),_transparent_42%),linear-gradient(180deg,_rgba(9,36,28,0.985),_rgba(6,20,16,0.98))] text-[#fcecc8] shadow-[0_30px_120px_rgba(0,0,0,0.45)]">
-          <div className="grid h-full lg:grid-cols-[176px_minmax(0,1fr)] xl:grid-cols-[176px_minmax(0,1fr)_272px]">
+          <div className="grid h-full lg:grid-cols-[212px_minmax(0,1fr)] xl:grid-cols-[212px_minmax(0,1fr)_272px]">
             <aside className="flex min-h-0 flex-col border-b border-[rgba(242,207,141,0.1)] bg-[linear-gradient(180deg,_rgba(8,30,23,0.94),_rgba(7,24,19,0.9))] p-3 lg:border-r lg:border-b-0 xl:p-3.5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-[16px] font-semibold leading-[1.05] text-[#fcecc8]">{pageTitle}</h2>
-                  <p className="mt-1 text-[11px] leading-snug text-[rgba(242,207,141,0.48)]">
+                  <h2 className="text-[17px] font-semibold leading-[1.05] text-[#fcecc8]">{pageTitle}</h2>
+                  <p className="mt-1 text-[12px] leading-snug text-[rgba(242,207,141,0.48)]">
                     Пошаговая сборка карточки.
                   </p>
                 </div>
@@ -1484,8 +1473,8 @@ export function PropertyWizardDialog({
                 <div className="h-1 rounded-full bg-[rgba(242,207,141,0.08)]">
                   <div className="h-full rounded-full bg-emerald-400 transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
-                <div className="mt-1 text-[11px] font-medium text-[#fcecc8]">{progressLabel}</div>
-                <div className="mt-0.5 text-[10px] leading-snug text-[rgba(242,207,141,0.42)]">
+                <div className="mt-1 text-[13px] font-medium text-[#fcecc8]">{progressLabel}</div>
+                <div className="mt-0.5 text-[12px] leading-snug text-[rgba(242,207,141,0.52)]">
                   {currentStepIssues.length > 0 ? `${currentStepIssues.length} поля требуют внимания.` : 'Текущий шаг заполнен.'}
                 </div>
               </div>
@@ -1518,9 +1507,9 @@ export function PropertyWizardDialog({
                          {completed ? <Check className="size-3" /> : index + 1}
                         </div>
                        <div className="min-w-0 flex-1">
-                         <div className="flex items-center gap-1.5">
-                           <Icon className={cn('size-3', active ? 'text-emerald-300' : 'text-[rgba(242,207,141,0.58)]')} />
-                           <span className="truncate text-[13px] font-semibold text-[#fcecc8]">{step.title}</span>
+                         <div className="flex min-w-0 items-center gap-1.5">
+                           <Icon className={cn('size-3.5 shrink-0', active ? 'text-emerald-300' : 'text-[rgba(242,207,141,0.58)]')} />
+                           <span className="truncate text-[13px] font-semibold leading-snug text-[#fcecc8]">{step.title}</span>
                          </div>
                        </div>
                      </button>
@@ -1532,10 +1521,10 @@ export function PropertyWizardDialog({
             <section className="flex min-h-0 flex-col">
               <div className="border-b border-[rgba(242,207,141,0.1)] px-4 py-3 xl:px-5 xl:py-3.5">
                 <DialogHeader className="text-left">
-                  <div className="inline-flex w-fit items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
+                  <div className="inline-flex w-fit items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
                     {stepBadgeLabel}
                   </div>
-                  <DialogTitle className="text-[22px] leading-none text-[#fcecc8]">{currentStep.title}</DialogTitle>
+                  <DialogTitle className="min-w-0 break-words text-[22px] leading-tight text-[#fcecc8]">{currentStep.title}</DialogTitle>
                 </DialogHeader>
               </div>
 

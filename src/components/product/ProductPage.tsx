@@ -31,10 +31,10 @@ export function ProductPage() {
               Продукт
             </Button>
             <span className="text-[rgba(242,207,141,0.3)]">/</span>
-            <span className="text-[rgba(242,207,141,0.85)] font-medium">Аналитика сети</span>
+            <span className="text-[rgba(242,207,141,0.85)] font-medium">МЛМ-аналитика</span>
           </div>
           {/* Analytics in white container so its CSS vars render correctly */}
-          <div className="rounded-2xl bg-white shadow-xl overflow-hidden">
+          <div className="leads-page-light-panel rounded-2xl bg-[#eaf4ee] shadow-xl overflow-hidden">
             <SupremeOwnerDashboardPage />
           </div>
         </div>
@@ -57,7 +57,7 @@ export function ProductPage() {
         {/* Cards grid */}
         <div className="grid gap-5 sm:grid-cols-2 max-w-2xl">
 
-          {/* Аналитика сети */}
+          {/* МЛМ-аналитика */}
           <button
             onClick={() => isRopOrAbove && setSection('network')}
             disabled={!isRopOrAbove}
@@ -66,7 +66,7 @@ export function ProductPage() {
             <div className="mb-5 flex size-12 items-center justify-center rounded-xl border border-[rgba(242,207,141,0.2)] bg-[rgba(242,207,141,0.08)]">
               <BarChart2 className="size-6 text-[rgba(242,207,141,0.85)]" />
             </div>
-            <h3 className="text-base font-bold text-[#fcecc8]">Аналитика сети</h3>
+            <h3 className="text-base font-bold text-[#fcecc8]">МЛМ-аналитика</h3>
             <p className="mt-1.5 text-sm text-[rgba(242,207,141,0.5)]">
               KPI, партнёры, воронка и активность
             </p>

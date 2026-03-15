@@ -107,7 +107,7 @@ export function TopReferralsChart({ partners, period, onPeriodChange }: TopRefer
                             width={200}
                             tick={{ fill: "#475569", fontSize: 14, fontWeight: 500 }}
                         />
-                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                         <Bar
                             dataKey="value"
                             fill="var(--color-referrals)"

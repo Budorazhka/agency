@@ -19,10 +19,12 @@ import {
   Trash2,
   Pencil,
   ListFilter,
+  Zap,
+  Bookmark,
 } from "lucide-react"
 
 import { useLeads } from "@/context/LeadsContext"
-import type { LeadEvent, LeadEventType } from "@/types/leads"
+import type { LeadEvent, LeadEventType, TaskSetByRole } from "@/types/leads"
 import { LEAD_STAGES } from "@/data/leads-mock"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -42,8 +44,118 @@ import {
 } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useAuth } from "@/context/AuthContext"
+import { useRolePermissions } from "@/hooks/useRolePermissions"
 
 const TASK_EVENT_TYPES: LeadEventType[] = ['task_created', 'task', 'task_completed', 'overdue']
+
+const TASK_SET_BY_ROLE_LABEL: Record<TaskSetByRole, string> = {
+  owner: 'Собственник',
+  director: 'Директор',
+  rop: 'РОП',
+}
+
+/** Чипы срочности и важности в стиле дизайна: красный/серый (молния), жёлтый/серый (закладка) */
+function EisenhowerChips({
+  urgent,
+  important,
+  onChangeUrgent,
+  onChangeImportant,
+  readOnly,
+}: {
+  urgent: boolean
+  important: boolean
+  onChangeUrgent?: (v: boolean) => void
+  onChangeImportant?: (v: boolean) => void
+  readOnly?: boolean
+}) {
+  const isInteractive = !readOnly && (onChangeUrgent != null || onChangeImportant != null)
+
+  /* Цвета по референсу: срочно — красно-розовый, важно — жёлтый, не выбран — серый */
+  const urgentActive = "bg-rose-50 text-rose-700 border-rose-300"
+  const urgentInactive = "bg-slate-100 text-slate-500 border-slate-200"
+  const importantActive = "bg-yellow-50 text-yellow-800 border-yellow-300"
+  const importantInactive = "bg-slate-100 text-slate-500 border-slate-200"
+  const iconUrgent = "fill-rose-600 text-rose-600"
+  const iconImportant = "fill-yellow-600 text-yellow-700"
+
+  if (readOnly) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border",
+          urgent ? urgentActive : urgentInactive
+        )}>
+          <Zap className={cn("size-3.5", urgent ? iconUrgent : "text-slate-400")} />
+          {urgent ? "Срочно" : "Не срочно"}
+        </span>
+        <span className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border",
+          important ? importantActive : importantInactive
+        )}>
+          <Bookmark className={cn("size-3.5", important ? iconImportant : "text-slate-400")} />
+          {important ? "Важно" : "Не важно"}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm">
+        <button
+          type="button"
+          onClick={() => onChangeUrgent?.(true)}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-r border-slate-200",
+            urgent ? urgentActive : "bg-slate-50 text-slate-500",
+            isInteractive && "hover:opacity-90 cursor-pointer"
+          )}
+        >
+          <Zap className={cn("size-3.5", urgent ? iconUrgent : "text-slate-400")} />
+          Срочно
+        </button>
+        <button
+          type="button"
+          onClick={() => onChangeUrgent?.(false)}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+            !urgent ? urgentInactive : "bg-white text-slate-400",
+            isInteractive && "hover:opacity-90 cursor-pointer"
+          )}
+        >
+          <Zap className="size-3.5 text-slate-400 stroke-[2]" strokeWidth={1.5} />
+          Не срочно
+        </button>
+      </div>
+      <div className="flex rounded-lg overflow-hidden border border-slate-200 bg-white shadow-sm">
+        <button
+          type="button"
+          onClick={() => onChangeImportant?.(true)}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-r border-slate-200",
+            important ? importantActive : "bg-slate-50 text-slate-500",
+            isInteractive && "hover:opacity-90 cursor-pointer"
+          )}
+        >
+          <Bookmark className={cn("size-3.5", important ? iconImportant : "text-slate-400")} />
+          Важно
+        </button>
+        <button
+          type="button"
+          onClick={() => onChangeImportant?.(false)}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+            !important ? importantInactive : "bg-white text-slate-400",
+            isInteractive && "hover:opacity-90 cursor-pointer"
+          )}
+        >
+          <Bookmark className="size-3.5 text-slate-400 stroke-[2]" strokeWidth={1.5} />
+          Не важно
+        </button>
+      </div>
+    </div>
+  )
+}
 
 function getEventIcon(type: LeadEventType) {
   switch (type) {
@@ -127,6 +239,7 @@ export function LeadHistoryTimeline({
 }) {
   const { getLeadWithHistory, dispatch, leadManagers } = useLeads()
   const { currentUser } = useAuth()
+  const { isRopOrAbove, role } = useRolePermissions()
   const isManager = currentUser?.role === "manager"
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -134,6 +247,8 @@ export function LeadHistoryTimeline({
   const [inputType, setInputType] = useState<"comment" | "task">(initialInputType)
   const [taskDeadline, setTaskDeadline] = useState("")
   const [taskAssignee, setTaskAssignee] = useState("")
+  const [taskEisenhowerUrgent, setTaskEisenhowerUrgent] = useState<boolean>(false)
+  const [taskEisenhowerImportant, setTaskEisenhowerImportant] = useState<boolean>(false)
 
   // Filter: only tasks
   const [onlyTasks, setOnlyTasks] = useState(false)
@@ -142,6 +257,8 @@ export function LeadHistoryTimeline({
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [editTaskName, setEditTaskName] = useState("")
   const [editDeadline, setEditDeadline] = useState("")
+  const [editEisenhowerUrgent, setEditEisenhowerUrgent] = useState<boolean>(false)
+  const [editEisenhowerImportant, setEditEisenhowerImportant] = useState<boolean>(false)
 
   const handleAddEvent = () => {
     if (!leadId) return
@@ -149,8 +266,10 @@ export function LeadHistoryTimeline({
 
     const now = new Date().toISOString()
 
-    let submitManagerId = currentUser?.id ?? 'lm-1'
-    let submitManagerName = currentUser?.name ?? 'Текущий Пользователь'
+    const authorId = currentUser?.id ?? 'lm-1'
+    const authorName = currentUser?.name ?? 'Текущий Пользователь'
+    let submitManagerId = authorId
+    let submitManagerName = authorName
 
     if (inputType === 'task' && taskAssignee) {
       submitManagerId = taskAssignee
@@ -158,14 +277,27 @@ export function LeadHistoryTimeline({
       if (mgr) submitManagerName = mgr.name
     }
 
+    const setByRole: TaskSetByRole | undefined =
+      inputType === 'task' && isRopOrAbove && (role === 'owner' || role === 'director' || role === 'rop')
+        ? role
+        : undefined
+
     const event: LeadEvent = {
        id: `evt-${Date.now()}`,
        type: inputType === 'task' ? 'task_created' : 'comment',
        timestamp: now,
-       authorId: 'lm-1',
-       authorName: 'Текущий Пользователь',
+       authorId,
+       authorName,
        payload: inputType === 'task'
-         ? { taskName: newComment, deadline: taskDeadline || now, managerId: submitManagerId, managerName: submitManagerName }
+         ? {
+             taskName: newComment,
+             deadline: taskDeadline || now,
+             managerId: submitManagerId,
+             managerName: submitManagerName,
+             setByRole,
+             eisenhowerUrgent: taskEisenhowerUrgent,
+             eisenhowerImportant: taskEisenhowerImportant,
+           }
          : { comment: newComment }
     }
 
@@ -173,11 +305,15 @@ export function LeadHistoryTimeline({
     setNewComment('')
     setTaskDeadline('')
     setTaskAssignee('')
+    setTaskEisenhowerUrgent(false)
+    setTaskEisenhowerImportant(false)
   }
 
   const handleStartEdit = (event: LeadEvent) => {
     setEditingEventId(event.id)
     setEditTaskName(event.payload.taskName ?? '')
+    setEditEisenhowerUrgent(event.payload.eisenhowerUrgent ?? false)
+    setEditEisenhowerImportant(event.payload.eisenhowerImportant ?? false)
     // Convert ISO to datetime-local format
     if (event.payload.deadline) {
       const d = new Date(event.payload.deadline)
@@ -198,7 +334,12 @@ export function LeadHistoryTimeline({
       type: 'EDIT_LEAD_EVENT',
       leadId,
       eventId: editingEventId,
-      patch: { taskName: editTaskName, deadline: deadlineIso },
+      patch: {
+        taskName: editTaskName,
+        deadline: deadlineIso,
+        eisenhowerUrgent: editEisenhowerUrgent,
+        eisenhowerImportant: editEisenhowerImportant,
+      },
     })
 
     // Log change as a comment
@@ -230,6 +371,8 @@ export function LeadHistoryTimeline({
     setEditingEventId(null)
     setEditTaskName('')
     setEditDeadline('')
+    setEditEisenhowerUrgent(false)
+    setEditEisenhowerImportant(false)
   }
 
   const lead = useMemo(() => {
@@ -369,7 +512,11 @@ export function LeadHistoryTimeline({
                                     "text-[12px] font-bold truncate",
                                     event.type === 'overdue' ? "text-rose-600" : "text-slate-900"
                                   )}>
-                                    {event.type === 'overdue' ? 'Внимание, просрочка!' : event.authorName}
+                                    {event.type === 'overdue'
+                                      ? 'Внимание, просрочка!'
+                                      : event.type === 'task_created' && event.payload.setByRole
+                                        ? `Задача поставлена: ${TASK_SET_BY_ROLE_LABEL[event.payload.setByRole]} ${event.authorName}`
+                                        : event.authorName}
                                   </span>
                                   <span className={cn(
                                     "text-[10px] uppercase tracking-wider font-semibold shrink-0 bg-slate-100 px-2 py-0.5 rounded-md",
@@ -423,6 +570,15 @@ export function LeadHistoryTimeline({
                                     className="text-sm"
                                     autoFocus
                                   />
+                                  <div>
+                                    <p className="text-[10px] uppercase text-slate-500 font-bold tracking-wide mb-1.5">Срочность и важность</p>
+                                    <EisenhowerChips
+                                      urgent={editEisenhowerUrgent}
+                                      important={editEisenhowerImportant}
+                                      onChangeUrgent={setEditEisenhowerUrgent}
+                                      onChangeImportant={setEditEisenhowerImportant}
+                                    />
+                                  </div>
                                   <div className="flex items-center gap-2">
                                     <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wide shrink-0">Срок:</span>
                                     <input
@@ -460,6 +616,13 @@ export function LeadHistoryTimeline({
                                   ) : event.type === 'task_created' ? (
                                     <div className="space-y-2.5">
                                       <span className="text-slate-900 font-medium">{event.payload.taskName}</span>
+                                      {(event.payload.eisenhowerUrgent !== undefined || event.payload.eisenhowerImportant !== undefined) && (
+                                        <EisenhowerChips
+                                          readOnly
+                                          urgent={event.payload.eisenhowerUrgent === true}
+                                          important={event.payload.eisenhowerImportant === true}
+                                        />
+                                      )}
                                       {event.payload.deadline && (
                                         <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-700 bg-amber-50 w-fit px-2.5 py-1 rounded-md border border-amber-200">
                                           <Clock className="size-3.5" />
@@ -563,6 +726,15 @@ export function LeadHistoryTimeline({
                       </Select>
                     </div>
                   )}
+                  <div>
+                    <p className="text-[10px] uppercase text-slate-500 font-bold tracking-wide mb-1.5">Срочность и важность</p>
+                    <EisenhowerChips
+                      urgent={taskEisenhowerUrgent}
+                      important={taskEisenhowerImportant}
+                      onChangeUrgent={setTaskEisenhowerUrgent}
+                      onChangeImportant={setTaskEisenhowerImportant}
+                    />
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wide">Крайний срок:</span>
                     <Input

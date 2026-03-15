@@ -15,6 +15,8 @@ import {
 import { ArrowLeft, CheckCircle2, Clock, Filter, Search, UserCheck, X, Eye, Phone, MessageSquare, ListTodo, LayoutList, LayoutGrid } from "lucide-react"
 import { useLeads } from "@/context/LeadsContext"
 import { useAuth } from "@/context/AuthContext"
+import { useRolePermissions } from "@/hooks/useRolePermissions"
+import { LeadsSecretDistributionDialog } from "@/components/leads/LeadsSecretDistributionDialog"
 import type { Lead } from "@/types/leads"
 import { LEAD_STAGES, LEAD_STAGE_COLUMN } from "@/data/leads-mock"
 import {
@@ -169,7 +171,11 @@ export function LeadsCardTableView({
 }) {
   const { state, dispatch } = useLeads()
   const { currentUser } = useAuth()
+  const { isRopOrAbove } = useRolePermissions()
   const isManager = currentUser?.role === "manager"
+  const [distributionOpen, setDistributionOpen] = useState(false)
+  // Кнопка видна РОПу+ или менеджеру назначенному дежурным в ручном режиме
+  const canOpenDistribution = isRopOrAbove || (isManager && state.manualDistributorId === currentUser?.id)
   const { leadPool, leadManagers } = state
   const [cursorByStageId, setCursorByStageId] = useState<Record<string, number>>({})
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null)
@@ -189,6 +195,7 @@ export function LeadsCardTableView({
   const [dateFrom, setDateFrom] = useState<string>("")
   const [dateTo, setDateTo] = useState<string>("")
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [transferConfirm, setTransferConfirm] = useState<{ newManagerId: string | null; newManagerName: string } | null>(null)
   const [dealSession, setDealSession] = useState(0)
   const [draggingLead, setDraggingLead] = useState<Lead | null>(null)
   const [viewMode, setViewMode] = useState<"poker" | "list">("poker")
@@ -507,6 +514,22 @@ export function LeadsCardTableView({
           </div>
         </div>
 
+        {canOpenDistribution && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDistributionOpen(true)}
+            className="h-7 shrink-0 gap-1.5 px-2.5 text-[11px] font-medium border-[rgba(229,196,136,0.6)] bg-[rgba(68,43,18,0.5)] text-[#fcecc8] hover:border-[rgba(236,194,112,0.7)] hover:bg-[rgba(88,57,25,0.65)]"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 shrink-0">
+              <rect x="3" y="1" width="15" height="21" rx="2.2" />
+              <rect x="7" y="3" width="15" height="21" rx="2.2" />
+              <path d="M19.5 8.5l1.5 2.5-1.5 2.5-1.5-2.5 1.5-2.5z" fill="currentColor" stroke="none" />
+            </svg>
+            Распределение
+          </Button>
+        )}
+
         <Button
           variant="outline"
           size="sm"
@@ -542,57 +565,103 @@ export function LeadsCardTableView({
         )}
       </header>
 
+      <LeadsSecretDistributionDialog open={distributionOpen} onOpenChange={setDistributionOpen} />
+
       {viewMode === "list" && (
         <div className="relative z-10 min-h-0 flex-1 overflow-auto p-6" style={{ fontFamily: "Montserrat, sans-serif" }}>
-          <div className="flex gap-4 min-w-max">
-            {LEAD_STAGES.filter((stage) => (leadsByStage[stage.id] ?? []).length > 0).map((stage) => {
-              const stageLeads = leadsByStage[stage.id] ?? []
-              const col = LEAD_STAGE_COLUMN[stage.id]
-              const headerColor =
-                col === "rejection"
-                  ? "text-rose-300 border-rose-400/30"
-                  : col === "success"
-                  ? "text-emerald-300 border-emerald-400/30"
-                  : "text-[#fcecc8] border-[rgba(243,209,139,0.35)]"
-              return (
-                <div key={stage.id} className="flex flex-col gap-2 w-[220px]">
-                  <div className={`flex items-center justify-between pb-1.5 border-b ${headerColor}`}>
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{stage.name}</span>
-                    <span className="text-[10px] font-bold opacity-70">{stageLeads.length}</span>
-                  </div>
-                  {stageLeads.map((lead) => {
-                    const isActive = activeLead?.id === lead.id
-                    const isCritical = getLeadProblemState(lead) === "critical"
-                    return (
-                      <button
-                        key={lead.id}
-                        onClick={() => { setSelectedLeadId(lead.id); setHistoryOpen(true) }}
-                        className={cn(
-                          "w-full text-left rounded-lg border px-3 py-2 transition-colors",
-                          isActive
-                            ? "border-[rgba(243,209,139,0.6)] bg-[rgba(68,43,18,0.85)]"
-                            : "border-[rgba(243,209,139,0.2)] bg-[rgba(18,45,36,0.6)] hover:bg-[rgba(18,65,46,0.75)]",
-                          isCritical && "border-rose-400/40 bg-[rgba(60,10,10,0.45)]"
-                        )}
-                      >
-                        <p className={cn(
-                          "text-[12px] font-semibold leading-tight line-clamp-1",
-                          isCritical ? "text-rose-300" : "text-[#fcecc8]"
-                        )}>
-                          {lead.name ?? lead.id}
-                        </p>
-                        <p className="text-[10px] text-[rgba(243,225,188,0.55)] mt-0.5 truncate">
-                          {lead.managerId ? (managerNameById[lead.managerId] ?? "—") : "Не назначен"}
-                        </p>
-                        {lead.commissionUsd != null && lead.commissionUsd > 0 && (
-                          <p className="text-[10px] font-bold text-[#ffe4a8] mt-0.5">{formatUsd(lead.commissionUsd)}</p>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
-              )
-            })}
+          <div className="rounded-xl border border-[rgba(243,209,139,0.25)] bg-[rgba(18,45,36,0.5)] shadow-[0_4px_24px_rgba(0,0,0,0.25)] overflow-hidden">
+            {filteredLeads.length === 0 ? (
+              <div className="py-16 text-center text-[12px] font-medium text-[rgba(243,225,188,0.5)]">
+                Нет лидов по выбранным фильтрам
+              </div>
+            ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse">
+                <thead>
+                  <tr className="border-b border-[rgba(243,209,139,0.2)] bg-[rgba(0,0,0,0.2)]">
+                    <th className="text-left text-[10px] font-bold uppercase tracking-widest text-[rgba(243,225,188,0.7)] px-4 py-3">Этап</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-widest text-[rgba(243,225,188,0.7)] px-4 py-3">Лид</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-widest text-[rgba(243,225,188,0.7)] px-4 py-3">Менеджер</th>
+                    <th className="text-left text-[10px] font-bold uppercase tracking-widest text-[rgba(243,225,188,0.7)] px-4 py-3">Комиссия</th>
+                    <th className="text-center text-[10px] font-bold uppercase tracking-widest text-[rgba(243,225,188,0.7)] px-4 py-3 w-20">Задача</th>
+                    <th className="text-center text-[10px] font-bold uppercase tracking-widest text-[rgba(243,225,188,0.7)] px-4 py-3 w-20">Проср.</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[rgba(243,209,139,0.08)]">
+                  {filteredLeads
+                    .slice()
+                    .sort((a, b) => {
+                      const stageOrderA = LEAD_STAGES.findIndex((s) => s.id === a.stageId)
+                      const stageOrderB = LEAD_STAGES.findIndex((s) => s.id === b.stageId)
+                      if (stageOrderA !== stageOrderB) return stageOrderA - stageOrderB
+                      return (a.name ?? a.id).localeCompare(b.name ?? b.id)
+                    })
+                    .map((lead) => {
+                      const isActive = activeLead?.id === lead.id
+                      const isCritical = getLeadProblemState(lead) === "critical"
+                      const stage = LEAD_STAGES.find((s) => s.id === lead.stageId)
+                      const col = stage ? LEAD_STAGE_COLUMN[stage.id] : null
+                      return (
+                        <tr
+                          key={lead.id}
+                          onClick={() => { setSelectedLeadId(lead.id); setHistoryOpen(true) }}
+                          className={cn(
+                            "cursor-pointer transition-colors",
+                            isActive
+                              ? "bg-[rgba(243,209,139,0.12)] border-l-2 border-l-[rgba(243,209,139,0.6)]"
+                              : "hover:bg-[rgba(243,209,139,0.06)]",
+                            isCritical && "bg-[rgba(120,30,30,0.35)] border-l-2 border-l-rose-400/60 hover:bg-[rgba(120,30,30,0.45)]"
+                          )}
+                        >
+                          <td className="px-4 py-2.5">
+                            <span className={cn(
+                              "text-[11px] font-semibold",
+                              col === "rejection" ? "text-rose-300" : col === "success" ? "text-emerald-300" : "text-[rgba(243,225,188,0.85)]"
+                            )}>
+                              {stage?.name ?? "—"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className={cn(
+                              "text-[12px] font-semibold",
+                              isCritical ? "text-rose-200" : "text-[#fcecc8]"
+                            )}>
+                              {lead.name ?? lead.id}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-[11px] text-[rgba(243,225,188,0.7)]">
+                            {lead.managerId ? (managerNameById[lead.managerId] ?? "—") : "Не назначен"}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            {lead.commissionUsd != null && lead.commissionUsd > 0 ? (
+                              <span className="text-[11px] font-bold text-[#ffe4a8]">{formatUsd(lead.commissionUsd)}</span>
+                            ) : (
+                              <span className="text-[11px] text-[rgba(243,225,188,0.4)]">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5 text-center">
+                            <span className={cn(
+                              "text-[10px] font-bold uppercase",
+                              lead.hasTask !== false ? "text-emerald-400" : "text-rose-400"
+                            )}>
+                              {lead.hasTask !== false ? "Да" : "Нет"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-center">
+                            <span className={cn(
+                              "text-[10px] font-bold uppercase",
+                              lead.taskOverdue ? "text-rose-400" : "text-[rgba(243,225,188,0.5)]"
+                            )}>
+                              {lead.taskOverdue ? "Да" : "—"}
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                </tbody>
+              </table>
+            </div>
+            )}
           </div>
         </div>
       )}
@@ -903,26 +972,10 @@ export function LeadsCardTableView({
                   value={activeLead.managerId || "unassigned"}
                   onValueChange={(val) => {
                     const newManagerId = val === "unassigned" ? null : val
-                    if (newManagerId) {
-                      dispatch({ type: "ASSIGN_LEAD", leadId: activeLead.id, managerId: newManagerId })
-                      dispatch({
-                        type: "ADD_LEAD_EVENT",
-                        leadId: activeLead.id,
-                        event: {
-                          id: `evt-${Date.now()}`,
-                          type: "assign",
-                          timestamp: new Date().toISOString(),
-                          authorId: "lm-1",
-                          authorName: "Текущий Пользователь",
-                          payload: {
-                            managerId: newManagerId,
-                            managerName: leadManagers.find((m) => m.id === newManagerId)?.name || "Неизвестный менеджер",
-                          },
-                        },
-                      })
-                    } else {
-                        dispatch({ type: "UNASSIGN_LEAD", leadId: activeLead.id })
-                    }
+                    const newManagerName = newManagerId
+                      ? (leadManagers.find((m) => m.id === newManagerId)?.name ?? "Неизвестный менеджер")
+                      : ""
+                    setTransferConfirm({ newManagerId, newManagerName })
                   }}
                 >
                   <SelectTrigger className="h-9 w-[220px] bg-white border-slate-200 text-sm">
@@ -945,6 +998,56 @@ export function LeadsCardTableView({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Подтверждение передачи лида */}
+      <Dialog open={!!transferConfirm} onOpenChange={(open) => { if (!open) setTransferConfirm(null) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Передать лида?</DialogTitle>
+            <DialogDescription>
+              {transferConfirm && activeLead && (
+                transferConfirm.newManagerId
+                  ? <>Вы уверены, что хотите передать лида <strong>{activeLead.name ?? activeLead.id}</strong> менеджеру <strong>{transferConfirm.newManagerName}</strong>?</>
+                  : <>Вы уверены, что хотите снять назначение с лида <strong>{activeLead.name ?? activeLead.id}</strong>?</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setTransferConfirm(null)}>
+              Отмена
+            </Button>
+            <Button
+              onClick={() => {
+                if (!activeLead || !transferConfirm) return
+                if (transferConfirm.newManagerId) {
+                  dispatch({ type: "ASSIGN_LEAD", leadId: activeLead.id, managerId: transferConfirm.newManagerId })
+                  dispatch({
+                    type: "ADD_LEAD_EVENT",
+                    leadId: activeLead.id,
+                    event: {
+                      id: `evt-${Date.now()}`,
+                      type: "assign",
+                      timestamp: new Date().toISOString(),
+                      authorId: "lm-1",
+                      authorName: "Текущий Пользователь",
+                      payload: {
+                        managerId: transferConfirm.newManagerId,
+                        managerName: transferConfirm.newManagerName,
+                      },
+                    },
+                  })
+                } else {
+                  dispatch({ type: "UNASSIGN_LEAD", leadId: activeLead.id })
+                }
+                setTransferConfirm(null)
+              }}
+            >
+              Подтвердить
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </>
   )
 }

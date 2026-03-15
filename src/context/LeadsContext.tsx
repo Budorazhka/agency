@@ -90,7 +90,7 @@ export type LeadsAction =
   | { type: 'BULK_REASSIGN_LEADS'; fromManagerId: string; toManagerId: string }
   | { type: 'UPDATE_LEAD_MANAGER_SUBSTITUTE'; managerId: string; patch: { isUnavailable?: boolean; substituteId?: string | null } }
   | { type: 'DELETE_LEAD_EVENT'; leadId: string; eventId: string }
-  | { type: 'EDIT_LEAD_EVENT'; leadId: string; eventId: string; patch: { taskName?: string; deadline?: string } }
+  | { type: 'EDIT_LEAD_EVENT'; leadId: string; eventId: string; patch: { taskName?: string; deadline?: string; eisenhowerUrgent?: boolean; eisenhowerImportant?: boolean } }
 
 function leadsReducer(state: LeadsState, action: LeadsAction): LeadsState {
   switch (action.type) {
@@ -210,7 +210,7 @@ function leadsReducer(state: LeadsState, action: LeadsAction): LeadsState {
           ...state.leadHistory,
           [action.leadId]: prev.map((evt) =>
             evt.id === action.eventId
-              ? { ...evt, payload: { ...evt.payload, ...action.patch } }
+              ? { ...evt, payload: { ...evt.payload, ...action.patch } as LeadEvent['payload'] }
               : evt
           ),
         },

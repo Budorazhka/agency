@@ -22,29 +22,29 @@ function getKpiConfig(referralsLabel: string, secondMetricLabel: string) {
             key: "level1Referrals" as const,
             label: referralsLabel,
             icon: Users,
-            iconColor: "text-blue-500",
-            iconBg: "bg-blue-500/10",
+            iconColor: "text-violet-600",
+            iconBg: "bg-violet-500/10",
         },
         {
             key: "totalListings" as const,
             label: secondMetricLabel,
             icon: Home,
-            iconColor: "text-emerald-500",
-            iconBg: "bg-emerald-500/10",
+            iconColor: "text-amber-600",
+            iconBg: "bg-amber-500/10",
         },
         {
             key: "totalLeads" as const,
             label: "Лиды",
             icon: UserCheck,
-            iconColor: "text-amber-500",
-            iconBg: "bg-amber-500/10",
+            iconColor: "text-blue-600",
+            iconBg: "bg-blue-500/10",
         },
         {
             key: "totalDeals" as const,
             label: "Сделки",
             icon: Handshake,
-            iconColor: "text-violet-500",
-            iconBg: "bg-violet-500/10",
+            iconColor: "text-emerald-600",
+            iconBg: "bg-emerald-500/10",
         },
     ];
 }
@@ -65,7 +65,7 @@ export function StaticKpiCards({ data, referralsLabel = "Рефералы L1", s
                                 <Icon className={`h-5 w-5 ${kpi.iconColor}`} />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-base font-medium leading-snug text-slate-700 break-words">{kpi.label}</p>
+                                <p className="text-base font-medium leading-snug text-slate-800 break-words">{kpi.label}</p>
                                 <p className="text-2xl font-bold leading-none text-slate-900 tabular-nums">
                                     {value.toLocaleString("ru-RU")}
                                 </p>

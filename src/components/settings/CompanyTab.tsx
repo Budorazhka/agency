@@ -30,37 +30,6 @@ function FeltInput({
   )
 }
 
-const HOURS = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`)
-
-function FeltSelect({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-[rgba(242,207,141,0.55)] uppercase tracking-wide">
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-[rgba(242,207,141,0.2)] bg-[rgba(0,0,0,0.4)] px-4 py-2.5 text-sm text-[#fcecc8] outline-none focus:border-[rgba(242,207,141,0.5)] transition-all cursor-pointer"
-      >
-        {options.map((o) => (
-          <option key={o} value={o} className="bg-[#061e16] text-[#fcecc8]">{o}</option>
-        ))}
-      </select>
-    </div>
-  )
-}
-
 export function CompanyTab() {
   const [name,    setName]    = useState('Агентство Недвижимости Премьер')
   const [legal,   setLegal]   = useState('ООО «Премьер»')
@@ -68,10 +37,6 @@ export function CompanyTab() {
   const [address, setAddress] = useState('г. Москва, ул. Тверская, 12')
   const [site,    setSite]    = useState('premier-estate.ru')
   const [phone,   setPhone]   = useState('+7 (495) 123-45-67')
-  const [wdFrom,  setWdFrom]  = useState('09:00')
-  const [wdTo,    setWdTo]    = useState('19:00')
-  const [weFrom,  setWeFrom]  = useState('10:00')
-  const [weTo,    setWeTo]    = useState('16:00')
   const [saved,   setSaved]   = useState(false)
 
   function handleSave() {
@@ -108,29 +73,6 @@ export function CompanyTab() {
         </div>
         <FeltInput label="Сайт" value={site} onChange={setSite} placeholder="example.ru" />
         <FeltInput label="Телефон компании" value={phone} onChange={setPhone} type="tel" placeholder="+7 (___) ___-__-__" />
-      </div>
-
-      {/* Working hours */}
-      <div className="rounded-xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.15)] p-4 space-y-4">
-        <p className="text-sm font-semibold text-[rgba(242,207,141,0.7)]">Рабочие часы</p>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <p className="text-xs text-[rgba(242,207,141,0.45)]">Пн — Пт</p>
-            <div className="flex items-center gap-2">
-              <FeltSelect label="С" value={wdFrom} onChange={setWdFrom} options={HOURS} />
-              <span className="mt-7 text-[rgba(242,207,141,0.4)]">—</span>
-              <FeltSelect label="До" value={wdTo} onChange={setWdTo} options={HOURS} />
-            </div>
-          </div>
-          <div className="space-y-3">
-            <p className="text-xs text-[rgba(242,207,141,0.45)]">Сб — Вс</p>
-            <div className="flex items-center gap-2">
-              <FeltSelect label="С" value={weFrom} onChange={setWeFrom} options={HOURS} />
-              <span className="mt-7 text-[rgba(242,207,141,0.4)]">—</span>
-              <FeltSelect label="До" value={weTo} onChange={setWeTo} options={HOURS} />
-            </div>
-          </div>
-        </div>
       </div>
 
       <button

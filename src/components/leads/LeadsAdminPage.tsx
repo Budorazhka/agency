@@ -1,17 +1,38 @@
 import { useNavigate } from 'react-router-dom'
-import { ShieldX, LayoutGrid, BarChart2, ArrowLeft, Layers, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
+import { ShieldX, BarChart2, ArrowLeft, ArrowRight, Layers, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import './leads-secret-table.css'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { LeadCloudTab } from './LeadCloudTab'
-import { LeadPartnersTab } from './LeadPartnersTab'
-import { LeadSourcesTab } from './LeadSourcesTab'
 import { LeadAnalyticsTab } from './LeadAnalyticsTab'
 import { useRolePermissions } from '@/hooks/useRolePermissions'
 import { useAuth } from '@/context/AuthContext'
 import { useLeads } from '@/context/LeadsContext'
 import { useState } from 'react'
+
+const LEADS_WORKSPACE_HERO = `${import.meta.env.BASE_URL}ff6dd1b2-a0c7-4100-b51c-49d5cc39f05f.png`
+
+function PokerHeroCard({
+  title,
+  onClick,
+}: {
+  title: string
+  onClick: () => void
+}) {
+  return (
+    <button type="button" onClick={onClick} className="leads-poker-hero">
+      <div className="leads-poker-hero-media">
+        <img src={LEADS_WORKSPACE_HERO} alt="" className="leads-poker-hero-image" />
+      </div>
+      <div className="leads-poker-hero-copy">
+        <span className="leads-poker-hero-kicker">Рабочая область</span>
+        <h2 className="leads-poker-hero-title">{title}</h2>
+        <span className="leads-poker-hero-action">
+          Перейти в рабочую область <ArrowRight className="size-4" />
+        </span>
+      </div>
+    </button>
+  )
+}
 
 /** Упрощённый вид «Мои лиды» для роли Менеджер */
 function ManagerLeadsView() {
@@ -41,8 +62,8 @@ function ManagerLeadsView() {
               Назад
             </Button>
             <Header
-              title="Моя аналитика"
-              breadcrumbs={[{ label: 'Обзор', href: '/dashboard' }, { label: 'Мои лиды', href: '/dashboard/leads' }, { label: 'Аналитика' }]}
+              title="Моя МЛМ-аналитика"
+              breadcrumbs={[{ label: 'Обзор', href: '/dashboard' }, { label: 'Мои лиды', href: '/dashboard/leads' }, { label: 'МЛМ-аналитика' }]}
             />
           </div>
           <LeadAnalyticsTab />
@@ -108,32 +129,19 @@ function ManagerLeadsView() {
           </div>
         </div>
 
-        {/* Action Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
-          <button
+        <div className="space-y-4 max-w-5xl">
+          <PokerHeroCard
+            title="Открыть рабочую область"
             onClick={() => navigate('/dashboard/leads/poker')}
-            className="group rounded-2xl border border-[rgba(242,207,141,0.3)] bg-[rgba(18,48,36,0.7)] p-6 text-left transition-colors hover:border-[rgba(242,207,141,0.55)] hover:bg-[rgba(242,207,141,0.08)]"
-          >
-            <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-[rgba(242,207,141,0.25)] bg-[rgba(242,207,141,0.08)]">
-              <LayoutGrid className="size-6 text-[rgba(242,207,141,0.85)]" />
-            </div>
-            <h3 className="text-base font-bold text-[#fcecc8]">Мои лиды</h3>
-            <p className="mt-1 text-sm text-[rgba(242,207,141,0.5)]">
-              Карточки с назначенными лидами
-            </p>
-            <div className="mt-4 text-xs font-semibold text-[rgba(242,207,141,0.65)] group-hover:text-[#fcecc8]">
-              Открыть →
-            </div>
-          </button>
-
+          />
           <button
             onClick={() => setShowAnalytics(true)}
-            className="group rounded-2xl border border-[rgba(242,207,141,0.18)] bg-[rgba(10,30,22,0.5)] p-6 text-left transition-colors hover:border-[rgba(242,207,141,0.35)] hover:bg-[rgba(242,207,141,0.06)]"
+            className="group w-full rounded-2xl border border-[rgba(242,207,141,0.18)] bg-[rgba(10,30,22,0.5)] p-6 text-left transition-colors hover:border-[rgba(242,207,141,0.35)] hover:bg-[rgba(242,207,141,0.06)]"
           >
             <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-[rgba(242,207,141,0.18)] bg-[rgba(242,207,141,0.05)]">
               <BarChart2 className="size-6 text-[rgba(242,207,141,0.6)]" />
             </div>
-            <h3 className="text-base font-bold text-[rgba(242,207,141,0.8)]">Моя аналитика</h3>
+            <h3 className="text-base font-bold text-[rgba(242,207,141,0.8)]">Моя МЛМ-аналитика</h3>
             <p className="mt-1 text-sm text-[rgba(242,207,141,0.4)]">
               Воронка, KPI и динамика по моим лидам
             </p>
@@ -149,11 +157,25 @@ function ManagerLeadsView() {
 
 export function LeadsAdminPage() {
   const navigate = useNavigate()
-  const { isManager, isRopOrAbove, canManagePartners, canAddLeadSource } = useRolePermissions()
+  const { isManager, isMarketer, isRopOrAbove, canViewLeadAnalytics } = useRolePermissions()
 
   // Менеджер видит только свой упрощённый вид
   if (isManager) {
     return <ManagerLeadsView />
+  }
+
+  // Маркетолог видит только аналитику лидов
+  if (isMarketer) {
+    return (
+      <div className="leads-page-root -m-6 min-h-[calc(100vh+3rem)] lg:-m-8 lg:min-h-[calc(100vh+4rem)]">
+        <div className="leads-page-bg" aria-hidden />
+        <div className="leads-page-ornament" aria-hidden />
+        <div className="leads-page relative z-10 space-y-8 p-6 lg:p-8">
+          <Header title="Кабинет маркетолога" breadcrumbs={[{ label: 'Обзор', href: '/dashboard' }, { label: 'Кабинет маркетолога' }]} />
+          <LeadAnalyticsTab />
+        </div>
+      </div>
+    )
   }
 
   // Если нет никакой роли — страница недоступна (фолбэк)
@@ -187,67 +209,20 @@ export function LeadsAdminPage() {
           title="Контроль лидов"
           breadcrumbs={[{ label: 'Обзор', href: '/dashboard' }, { label: 'Контроль лидов' }]}
         />
-        <Tabs defaultValue="cloud" className="w-full">
-          <div className="flex flex-wrap items-center gap-3">
-            <TabsList className="leads-tabs-list inline-flex h-auto rounded-full p-1">
-              {/* Облако — РОП и выше */}
-              <TabsTrigger value="cloud" className="leads-tabs-trigger rounded-full border-0 px-4 py-2 text-sm font-medium shadow-none transition-colors">
-                Облако лидов
-              </TabsTrigger>
+        <PokerHeroCard
+          title="Открыть рабочую область"
+          onClick={() => navigate('/dashboard/leads/poker')}
+        />
 
-              {/* Партнёры — только Собственник */}
-              {canManagePartners && (
-                <TabsTrigger value="partners" className="leads-tabs-trigger rounded-full border-0 px-4 py-2 text-sm font-medium shadow-none transition-colors">
-                  Доступ к разделу
-                </TabsTrigger>
-              )}
-
-              {/* Источники — Директор и выше */}
-              {canAddLeadSource && (
-                <TabsTrigger value="sources" className="leads-tabs-trigger rounded-full border-0 px-4 py-2 text-sm font-medium shadow-none transition-colors">
-                  Источник лидов
-                </TabsTrigger>
-              )}
-
-              {/* Аналитика — РОП и выше */}
-              <TabsTrigger value="analytics" className="leads-tabs-trigger rounded-full border-0 px-4 py-2 text-sm font-medium shadow-none transition-colors">
-                Аналитика
-              </TabsTrigger>
-
-            </TabsList>
-          </div>
-
-          <TabsContent value="cloud" className="mt-6">
-            <div className="mb-4 flex items-center gap-2">
-              <Button
-                onClick={() => navigate('/dashboard/leads/poker')}
-                variant="outline"
-                className="flex items-center gap-1.5 rounded-lg border-[rgba(242,207,141,0.35)] bg-[rgba(18,48,36,0.6)] px-3 py-2 text-xs font-semibold text-[rgba(242,207,141,0.95)] hover:bg-[rgba(242,207,141,0.15)] hover:text-[#fcecc8]"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                Покерный стол (полный экран)
-              </Button>
+        {canViewLeadAnalytics && (
+          <section className="space-y-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[rgba(242,207,141,0.5)]">Аналитика</p>
+              <h2 className="mt-2 text-2xl font-bold text-[#fcecc8]">Кабинет маркетолога</h2>
             </div>
-            <LeadCloudTab />
-          </TabsContent>
-
-          {canManagePartners && (
-            <TabsContent value="partners" className="mt-6">
-              <LeadPartnersTab />
-            </TabsContent>
-          )}
-
-          {canAddLeadSource && (
-            <TabsContent value="sources" className="mt-6">
-              <LeadSourcesTab />
-            </TabsContent>
-          )}
-
-          <TabsContent value="analytics" className="mt-6">
             <LeadAnalyticsTab />
-          </TabsContent>
-
-        </Tabs>
+          </section>
+        )}
       </div>
     </div>
   )

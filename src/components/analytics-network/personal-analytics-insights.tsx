@@ -41,11 +41,11 @@ type PlanInputByBucket = Record<PlanBucket, Record<PlanMetricKey, string>>;
 const PLAN_STORAGE_KEY = "analytics.personal.planTargets.v1";
 
 const statusToneByColumn: Record<string, string> = {
-    rejection: "bg-blue-500",
-    in_progress: "bg-emerald-500",
-    preparation: "bg-emerald-500",
-    success: "bg-yellow-500",
-    active: "bg-emerald-500",
+    rejection: "bg-rose-500",
+    in_progress: "bg-blue-500",
+    preparation: "bg-sky-500",
+    success: "bg-emerald-500",
+    active: "bg-blue-500",
 };
 
 const statusHintByColumn: Record<string, string> = {

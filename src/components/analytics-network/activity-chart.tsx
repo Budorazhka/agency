@@ -27,22 +27,22 @@ interface ActivityChartProps {
 const chartConfig = {
     calls: {
         label: "Звонки",
-        color: "hsl(25, 95%, 53%)",
+        color: "hsl(22, 90%, 52%)",
     },
     chats: {
         label: "Чаты",
-        color: "hsl(187, 85%, 53%)",
+        color: "hsl(199, 89%, 48%)",
     },
     selections: {
         label: "Рассылки",
-        color: "hsl(330, 81%, 60%)",
+        color: "hsl(262, 72%, 58%)",
     },
 } satisfies ChartConfig;
 
 const legendItems = [
     { key: "calls", label: "Звонки", color: "bg-orange-500" },
-    { key: "chats", label: "Чаты", color: "bg-cyan-400" },
-    { key: "selections", label: "Рассылки", color: "bg-pink-400" },
+    { key: "chats", label: "Чаты", color: "bg-sky-500" },
+    { key: "selections", label: "Рассылки", color: "bg-violet-500" },
 ];
 
 const periods: { value: AnalyticsPeriod; label: string }[] = [

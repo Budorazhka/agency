@@ -77,6 +77,29 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 165, 95, 0.55) rgba(14, 35, 22, 0.5);
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: rgba(14, 35, 22, 0.5);
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(200, 165, 95, 0.55);
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(220, 185, 110, 0.8);
+  }
+  *::-webkit-scrollbar-thumb:active {
+    background: rgba(242, 207, 141, 0.95);
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
   }
   html {
     font-family: var(--font-sans);

@@ -40,12 +40,11 @@ const NOTIFICATIONS: NotifItem[] = [
   },
 ]
 
-type Channel = 'email' | 'telegram' | 'browser'
+type Channel = 'telegram' | 'crm'
 
 const CHANNELS: { id: Channel; label: string; icon: string }[] = [
-  { id: 'email',   label: 'E-mail',   icon: '✉' },
-  { id: 'telegram',label: 'Telegram', icon: '✈' },
-  { id: 'browser', label: 'Браузер',  icon: '🔔' },
+  { id: 'telegram', label: 'Telegram', icon: '✈' },
+  { id: 'crm',      label: 'СРМ',     icon: '📋' },
 ]
 
 export function NotificationsTab() {
@@ -59,7 +58,7 @@ export function NotificationsTab() {
     weekly_report:   false,
   })
 
-  const [channels, setChannels] = useState<Set<Channel>>(new Set(['email', 'browser']))
+  const [channels, setChannels] = useState<Set<Channel>>(new Set(['crm']))
 
   function toggleChannel(c: Channel) {
     setChannels((prev) => {

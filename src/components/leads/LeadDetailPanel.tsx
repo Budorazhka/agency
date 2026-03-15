@@ -12,14 +12,22 @@ import {
   CheckCircle2,
   Building2,
   ListTodo,
+  Zap,
+  Bookmark,
 } from 'lucide-react'
 import { useLeads } from '@/context/LeadsContext'
 import { LEAD_STAGES, LEAD_STAGE_COLUMN } from '@/data/leads-mock'
-import type { Lead, LeadEventType } from '@/types/leads'
+import type { Lead, LeadEventType, TaskSetByRole } from '@/types/leads'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { BuyerRegistrationForm } from './BuyerRegistrationForm'
+
+const TASK_SET_BY_ROLE_LABEL: Record<TaskSetByRole, string> = {
+  owner: 'Собственник',
+  director: 'Директор',
+  rop: 'РОП',
+}
 
 const SOURCE_LABEL: Record<string, string> = {
   primary: 'Первичка',
@@ -257,6 +265,41 @@ export function LeadDetailPanel({
                 <p className="text-sm text-slate-600">
                   Назначен менеджер: <span className="font-medium">{event.payload.managerName}</span>
                 </p>
+              )}
+              {event.type === 'task_created' && (
+                <div className="text-sm text-slate-700">
+                  {event.payload.setByRole && (
+                    <p className="text-xs text-slate-500 mb-0.5">
+                      Задача поставлена: {TASK_SET_BY_ROLE_LABEL[event.payload.setByRole]} {event.authorName}
+                    </p>
+                  )}
+                  <p className="font-medium text-slate-900">{event.payload.taskName}</p>
+                  {(event.payload.eisenhowerUrgent !== undefined || event.payload.eisenhowerImportant !== undefined) && (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      <span className={cn(
+                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border",
+                        event.payload.eisenhowerUrgent === true
+                          ? "bg-rose-50 text-rose-700 border-rose-300"
+                          : "bg-slate-100 text-slate-500 border-slate-200"
+                      )}>
+                        <Zap className={cn("size-3", event.payload.eisenhowerUrgent === true ? "fill-rose-600 text-rose-600" : "text-slate-400")} />
+                        {event.payload.eisenhowerUrgent === true ? "Срочно" : "Не срочно"}
+                      </span>
+                      <span className={cn(
+                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border",
+                        event.payload.eisenhowerImportant === true
+                          ? "bg-yellow-50 text-yellow-800 border-yellow-300"
+                          : "bg-slate-100 text-slate-500 border-slate-200"
+                      )}>
+                        <Bookmark className={cn("size-3", event.payload.eisenhowerImportant === true ? "fill-yellow-600 text-yellow-700" : "text-slate-400")} />
+                        {event.payload.eisenhowerImportant === true ? "Важно" : "Не важно"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+              {event.type === 'task_completed' && (
+                <p className="text-sm text-slate-500 line-through">{event.payload.taskName}</p>
               )}
             </div>
           </div>

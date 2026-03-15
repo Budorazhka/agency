@@ -49,7 +49,7 @@ export const DASHBOARD_BLOCKS: Record<AccountType, DashboardBlockConfig[]> = {
     { id: 'settings', label: 'Настройки', luxurySubtitle: 'Настройки', description: 'Настройки', route: '/dashboard/settings', icon: 'Settings', gemColor: 'amethyst', visible: true },
   ],
   internal: [
-    { id: 'product', label: 'Обзор', luxurySubtitle: 'Карта и аналитика', description: 'Карта и аналитика по сети', route: '/dashboard/overview', icon: 'LayoutDashboard', gemColor: 'ruby', visible: true },
+    { id: 'product', label: 'Обзор', luxurySubtitle: 'Карта и МЛМ-аналитика', description: 'Карта и МЛМ-аналитика по сети', route: '/dashboard/overview', icon: 'LayoutDashboard', gemColor: 'ruby', visible: true },
     { id: 'leads', label: 'Лиды', luxurySubtitle: 'Заявки VIP', description: 'Контроль лидов', route: '/dashboard/leads', icon: 'Users', gemColor: 'sapphire', visible: true },
     { id: 'personnel', label: 'Персонал', luxurySubtitle: 'Команда Мастеров', description: 'Команда и доступы', route: '/dashboard/personnel', icon: 'Users', gemColor: 'emerald', visible: true },
     { id: 'training', label: 'Обучение', luxurySubtitle: 'Академия Дилеров', description: 'LMS', route: '/dashboard/lms', icon: 'GraduationCap', gemColor: 'topaz', visible: true },

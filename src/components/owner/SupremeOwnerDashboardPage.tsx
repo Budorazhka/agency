@@ -419,7 +419,7 @@ export function SupremeOwnerDashboardPage() {
             <span>{rangeLabel}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-readable-2xl font-medium text-high-contrast">Дашборд собственника</h1>
+            <h1 className="text-readable-2xl font-medium text-high-contrast">Дашборд сети</h1>
             <Badge variant="outline" className="text-readable-xs">
               {globalData.periodLabel}
             </Badge>
@@ -875,7 +875,7 @@ export function SupremeOwnerDashboardPage() {
                       className="size-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     <Avatar className="size-10 shrink-0">
-                      <AvatarFallback className="text-readable-sm bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                      <AvatarFallback className="text-readable-sm bg-gradient-to-br from-emerald-500 to-amber-500 text-white font-semibold">
                         {partner.name.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -1651,14 +1651,14 @@ function PartnerAnalyticsPanel({
     {
       label: "Лиды (неделя)",
       value: dynamicKpi.addedLeads,
-      icon: <TrendingUp className="size-5 text-blue-600" />,
-      colorClass: "bg-blue-50 border-blue-100",
+      icon: <TrendingUp className="size-5 text-emerald-600" />,
+      colorClass: "bg-emerald-50 border-emerald-100",
     },
     {
       label: "Рефералы L1",
       value: staticKpi.level1Referrals,
-      icon: <Users className="size-5 text-purple-600" />,
-      colorClass: "bg-purple-50 border-purple-100",
+      icon: <Users className="size-5 text-amber-600" />,
+      colorClass: "bg-amber-50 border-amber-100",
     },
     {
       label: "Рефералы L2",
@@ -1693,7 +1693,7 @@ function PartnerAnalyticsPanel({
             {person.avatarUrl ? (
               <AvatarImage src={person.avatarUrl} alt={person.name} />
             ) : null}
-            <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+            <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-emerald-500 to-amber-500 text-white">
               {person.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>

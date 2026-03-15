@@ -1,27 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, LogIn, Building2, HardHat, UserRound, Shield } from 'lucide-react'
+import { Eye, EyeOff, LogIn, Building2 } from 'lucide-react'
 import { useAuth, MOCK_USERS } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ROLE_LABEL, ROLE_COLOR, ACCOUNT_TYPE_LABEL } from '@/lib/permissions'
-import type { AccountType, UserRole } from '@/types/auth'
+import { ROLE_LABEL, ROLE_COLOR } from '@/lib/permissions'
+import type { UserRole } from '@/types/auth'
 import { cn } from '@/lib/utils'
 
-const ACCOUNT_TYPES: { type: AccountType; icon: typeof Building2 }[] = [
-  { type: 'agency', icon: Building2 },
-  { type: 'developer', icon: HardHat },
-  { type: 'realtor', icon: UserRound },
-  { type: 'internal', icon: Shield },
-]
-
-const ROLES: UserRole[] = ['owner', 'director', 'rop', 'manager']
+const ROLES: UserRole[] = ['owner', 'director', 'rop', 'marketer', 'manager']
 
 export function LoginPage() {
   const { login, enterAs } = useAuth()
   const navigate = useNavigate()
-  const [selectedAccountType, setSelectedAccountType] = useState<AccountType | null>(null)
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
   const [loginVal, setLoginVal] = useState('')
   const [password, setPassword] = useState('')
@@ -30,8 +22,8 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   function handleEnterAs() {
-    if (selectedAccountType && selectedRole) {
-      enterAs(selectedAccountType, selectedRole)
+    if (selectedRole) {
+      enterAs('agency', selectedRole)
       navigate('/dashboard', { replace: true })
     }
   }
@@ -41,10 +33,12 @@ export function LoginPage() {
     setError('')
     setLoading(true)
     setTimeout(() => {
-      const ok = login(loginVal, password)
+      const result = login(loginVal, password)
       setLoading(false)
-      if (ok) {
+      if (result === 'ok') {
         navigate('/dashboard', { replace: true })
+      } else if (result === 'blocked') {
+        setError('Аккаунт заблокирован. Обратитесь к руководителю.')
       } else {
         setError('Неверный логин или пароль')
       }
@@ -52,8 +46,9 @@ export function LoginPage() {
   }
 
   function quickLogin(userLogin: string) {
-    const ok = login(userLogin, '1')
-    if (ok) navigate('/dashboard', { replace: true })
+    const result = login(userLogin, '1')
+    if (result === 'ok') navigate('/dashboard', { replace: true })
+    else if (result === 'blocked') setError('Аккаунт заблокирован. Обратитесь к руководителю.')
   }
 
   return (
@@ -69,31 +64,17 @@ export function LoginPage() {
             Войти по роли (демо)
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
-            Выберите тип кабинета и роль — откроется главный экран с нужными разделами
+            В этой версии доступно только агентство. Выберите роль и откроется нужный кабинет
           </p>
 
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
-            Тип кабинета
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
-            {ACCOUNT_TYPES.map(({ type, icon: Icon }) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setSelectedAccountType(type)}
-                className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-4 transition-all text-center',
-                  selectedAccountType === type
-                    ? 'border-[#0d3d2f] bg-[#0d3d2f]/08 text-foreground'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80 text-slate-600',
-                )}
-              >
-                <Icon className="size-5 shrink-0" />
-                <span className="text-xs font-medium leading-tight">
-                  {ACCOUNT_TYPE_LABEL[type]}
-                </span>
-              </button>
-            ))}
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[#0d3d2f]/15 bg-[#0d3d2f]/05 px-4 py-4">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-[#0d3d2f]/10 text-[#0d3d2f]">
+              <Building2 className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">Тип кабинета</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">Агентство</p>
+            </div>
           </div>
 
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
@@ -120,7 +101,7 @@ export function LoginPage() {
           <Button
             type="button"
             onClick={handleEnterAs}
-            disabled={!selectedAccountType || !selectedRole}
+            disabled={!selectedRole}
             className="w-full bg-[#0d3d2f] hover:bg-[#0a2f24] text-white"
           >
             Войти в кабинет
@@ -138,7 +119,7 @@ export function LoginPage() {
               <Input
                 id="login"
                 autoComplete="username"
-                placeholder="owner / director / rop / manager / admin"
+                placeholder="owner / director / rop / marketer / manager"
                 value={loginVal}
                 onChange={(e) => setLoginVal(e.target.value)}
                 disabled={loading}
@@ -193,7 +174,7 @@ export function LoginPage() {
           <div className="mt-4 pt-4 border-t border-slate-200">
             <p className="text-xs text-muted-foreground mb-2">Быстрый вход:</p>
             <div className="flex flex-wrap gap-2">
-              {MOCK_USERS.map((u) => (
+              {MOCK_USERS.filter((u) => u.accountType === 'agency').map((u) => (
                 <button
                   key={u.id}
                   onClick={() => quickLogin(u.login)}

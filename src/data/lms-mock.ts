@@ -1,4 +1,4 @@
-export type ContentType = 'article' | 'video' | 'script' | 'quiz' | 'presentation'
+export type ContentType = 'article' | 'video' | 'script' | 'quiz' | 'presentation' | 'pdf'
 export type TargetRole = 'all' | 'manager' | 'rop' | 'director'
 
 export interface ArticleContent { type: 'article'; body: string }
@@ -17,6 +17,12 @@ export interface PresentationContent {
   slides: Array<{ title: string; body: string }>
 }
 
+export interface PdfContent {
+  type: 'pdf'
+  url: string
+  description?: string
+}
+
 export interface LMSItem {
   id: string
   type: ContentType
@@ -25,7 +31,7 @@ export interface LMSItem {
   targetRole: TargetRole
   readTime?: string
   tags?: string[]
-  content: ArticleContent | VideoContent | ScriptContent | QuizContent | PresentationContent
+  content: ArticleContent | VideoContent | ScriptContent | QuizContent | PresentationContent | PdfContent
 }
 
 export const LMS_ITEMS: LMSItem[] = [

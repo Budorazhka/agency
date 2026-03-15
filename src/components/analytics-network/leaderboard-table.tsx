@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 // [DOC-RU]
 // Если ты меняешь этот файл, сначала держи прежний смысл метрик и полей, чтобы UI не разъехался.
 // Смысл файла: таблица лидеров/партнёров; тут ты управляешь колонками, сортировкой и переходами в карточку партнёра.
@@ -72,8 +72,8 @@ const weekDayLabels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
 function getMarkerClass(marker: ActivityMarker) {
     if (marker === "green") return "bg-emerald-500";
-    if (marker === "yellow") return "bg-amber-500";
-    return "bg-red-500";
+    if (marker === "yellow") return "bg-yellow-400";
+    return "bg-rose-500";
 }
 
 function getMarkerLabel(marker: ActivityMarker) {
@@ -87,12 +87,13 @@ function SortIcon({ column, currentColumn, direction }: {
     currentColumn: SortColumn;
     direction: SortDirection;
 }) {
+    const iconClass = "h-4 w-4 text-slate-600";
     if (column !== currentColumn) {
-        return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
+        return <ArrowUpDown className={iconClass} />;
     }
     return direction === "asc"
-        ? <ArrowUp className="h-4 w-4" />
-        : <ArrowDown className="h-4 w-4" />;
+        ? <ArrowUp className={iconClass} />
+        : <ArrowDown className={iconClass} />;
 }
 
 export function LeaderboardTable({
@@ -156,13 +157,13 @@ export function LeaderboardTable({
                     <div className="h-full overflow-x-auto">
                         <div className="h-full overflow-y-auto">
                         <Table className="min-w-[860px]">
-                            <TableHeader className="sticky top-0 z-10 bg-background">
-                                <TableRow className="hover:bg-transparent bg-background">
+                            <TableHeader className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
+                                <TableRow className="hover:bg-transparent bg-slate-50 border-0">
                                 {columns.map((col) => (
                                     <TableHead
                                         key={col.key}
                                         className={cn(
-                                            "p-3",
+                                            "p-3 text-slate-900 font-semibold",
                                             col.className,
                                             col.key === "participant" && "ps-6",
                                             col.key === "onlineDaysLast7" && "hidden lg:table-cell",
@@ -173,7 +174,7 @@ export function LeaderboardTable({
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-auto p-0 font-medium hover:bg-transparent"
+                                                className="h-auto p-0 font-semibold text-slate-900 hover:bg-slate-200/60 hover:text-slate-900"
                                                 onClick={() => onSortChange(col.sortKey!)}
                                             >
                                                 {col.label}
@@ -205,7 +206,7 @@ export function LeaderboardTable({
                                             <MiniBar
                                                 value={partner.leadsAdded}
                                                 maxValue={maxLeadsAdded}
-                                                color="bg-emerald-500"
+                                                color="bg-blue-500"
                                                 showValue
                                         />
                                         </TableCell>
@@ -214,15 +215,15 @@ export function LeaderboardTable({
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center gap-1" title="Звонки">
                                                 <Phone className="h-3.5 w-3.5 text-orange-500" />
-                                                    <span className="text-sm">{partner.callClicks.toLocaleString("ru-RU")}</span>
+                                                    <span className="text-sm font-medium text-slate-800 tabular-nums">{partner.callClicks.toLocaleString("ru-RU")}</span>
                                             </div>
                                             <div className="flex items-center gap-1" title="Чаты">
-                                                <MessageCircle className="h-3.5 w-3.5 text-cyan-500" />
-                                                    <span className="text-sm">{partner.chatOpens.toLocaleString("ru-RU")}</span>
+                                                <MessageCircle className="h-3.5 w-3.5 text-sky-500" />
+                                                    <span className="text-sm font-medium text-slate-800 tabular-nums">{partner.chatOpens.toLocaleString("ru-RU")}</span>
                                             </div>
                                             <div className="flex items-center gap-1" title="Рассылки">
-                                                <LayoutList className="h-3.5 w-3.5 text-pink-500" />
-                                                    <span className="text-sm">{partner.selectionsCreated.toLocaleString("ru-RU")}</span>
+                                                <LayoutList className="h-3.5 w-3.5 text-violet-500" />
+                                                    <span className="text-sm font-medium text-slate-800 tabular-nums">{partner.selectionsCreated.toLocaleString("ru-RU")}</span>
                                             </div>
                                         </div>
                                     </TableCell>
@@ -238,8 +239,8 @@ export function LeaderboardTable({
 
                                         <TableCell className="p-3 hidden lg:table-cell">
                                             <div className="flex items-center gap-1.5">
-                                                <span className="font-medium">{partner.onlineDaysLast7}</span>
-                                                <span className="text-muted-foreground">/7</span>
+                                                <span className="font-semibold text-slate-900 tabular-nums">{partner.onlineDaysLast7}</span>
+                                                <span className="text-slate-600">/7</span>
                                                 <div className="flex gap-0.5 ml-1" aria-hidden>
                                                     {partner.onlineWeekMarkers.map((marker, i) => (
                                                         <div
@@ -253,7 +254,7 @@ export function LeaderboardTable({
                                         </TableCell>
 
                                         <TableCell className="p-3 hidden lg:table-cell">
-                                            <span className="font-medium">
+                                            <span className="font-semibold text-slate-900 tabular-nums">
                                                 ${partner.commissionUsd.toLocaleString("ru-RU")}
                                             </span>
                                         </TableCell>
@@ -326,7 +327,7 @@ function MobilePartnerCard({
             <ParticipantCell partner={partner} />
             <div className="space-y-1">
                 <p className="text-[11px] text-muted-foreground">Лиды</p>
-                <MiniBar value={partner.leadsAdded} maxValue={maxLeadsAdded} color="bg-emerald-500" showValue />
+                <MiniBar value={partner.leadsAdded} maxValue={maxLeadsAdded} color="bg-blue-500" showValue />
             </div>
             <div className="space-y-1">
                 <p className="text-[11px] text-muted-foreground">Прогресс</p>
@@ -337,23 +338,23 @@ function MobilePartnerCard({
                     showValue
                 />
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-800 tabular-nums">
                 <span className="inline-flex items-center gap-1" title="Звонки">
                     <Phone className="h-3.5 w-3.5 text-orange-500" />
                     {partner.callClicks.toLocaleString("ru-RU")}
                 </span>
                 <span className="inline-flex items-center gap-1" title="Чаты">
-                    <MessageCircle className="h-3.5 w-3.5 text-cyan-500" />
+                    <MessageCircle className="h-3.5 w-3.5 text-sky-500" />
                     {partner.chatOpens.toLocaleString("ru-RU")}
                 </span>
                 <span className="inline-flex items-center gap-1" title="Рассылки">
-                    <LayoutList className="h-3.5 w-3.5 text-pink-500" />
+                    <LayoutList className="h-3.5 w-3.5 text-violet-500" />
                     {partner.selectionsCreated.toLocaleString("ru-RU")}
                 </span>
             </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-slate-600">
                 <span>Онлайн 7 дней: {partner.onlineDaysLast7}/7</span>
-                <span>Комиссия: ${partner.commissionUsd.toLocaleString("ru-RU")}</span>
+                <span className="font-semibold text-slate-900 tabular-nums">Комиссия: ${partner.commissionUsd.toLocaleString("ru-RU")}</span>
             </div>
         </div>
     );

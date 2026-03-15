@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Monitor, Smartphone, LogOut, ShieldCheck } from 'lucide-react'
-import { Switch } from '@/components/ui/switch'
+import { Monitor, Smartphone, LogOut } from 'lucide-react'
 
 interface Session {
   id: string
@@ -44,7 +43,6 @@ const MOCK_SESSIONS: Session[] = [
 
 export function SecurityTab() {
   const [sessions, setSessions] = useState(MOCK_SESSIONS)
-  const [twoFa, setTwoFa] = useState(false)
 
   function revokeSession(id: string) {
     setSessions((prev) => prev.filter((s) => s.id === 's1' || s.id !== id))
@@ -55,70 +53,48 @@ export function SecurityTab() {
   }
 
   return (
-    <div className="space-y-8 max-w-xl">
+    <div className="space-y-6 max-w-xl">
       {/* Last login */}
-      <div className="rounded-xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.15)] p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-[rgba(242,207,141,0.45)] mb-3">
+      <div className="rounded-xl border border-[rgba(242,207,141,0.2)] bg-[rgba(0,0,0,0.3)] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(242,207,141,0.6)] mb-4">
           Последний вход
         </p>
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-[rgba(242,207,141,0.4)] text-xs">Дата</p>
-            <p className="text-[#fcecc8] font-medium mt-0.5">14 марта 2026, 09:41</p>
+            <p className="text-[rgba(242,207,141,0.55)] text-xs mb-1">Дата</p>
+            <p className="text-[#fcecc8] text-sm font-semibold">14 марта 2026, 09:41</p>
           </div>
           <div>
-            <p className="text-[rgba(242,207,141,0.4)] text-xs">Устройство</p>
-            <p className="text-[#fcecc8] font-medium mt-0.5">Chrome · Win 11</p>
+            <p className="text-[rgba(242,207,141,0.55)] text-xs mb-1">Устройство</p>
+            <p className="text-[#fcecc8] text-sm font-semibold">Chrome · Win 11</p>
           </div>
           <div>
-            <p className="text-[rgba(242,207,141,0.4)] text-xs">IP-адрес</p>
-            <p className="text-[#fcecc8] font-medium mt-0.5">95.141.32.17</p>
-          </div>
-        </div>
-      </div>
-
-      {/* 2FA */}
-      <div className="flex items-center justify-between rounded-xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.15)] px-5 py-4">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="size-5 text-[rgba(242,207,141,0.5)]" />
-          <div>
-            <p className="text-sm font-medium text-[#fcecc8]">Двухфакторная аутентификация</p>
-            <p className="text-xs text-[rgba(242,207,141,0.4)] mt-0.5">
-              Дополнительная защита аккаунта через приложение-аутентификатор
-              <span className="ml-2 rounded-full border border-[rgba(242,207,141,0.2)] bg-[rgba(242,207,141,0.07)] px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[rgba(242,207,141,0.4)]">
-                Скоро
-              </span>
-            </p>
+            <p className="text-[rgba(242,207,141,0.55)] text-xs mb-1">IP-адрес</p>
+            <p className="text-[#fcecc8] text-sm font-semibold">95.141.32.17</p>
           </div>
         </div>
-        <Switch
-          checked={twoFa}
-          onCheckedChange={setTwoFa}
-          disabled
-          className="opacity-50"
-        />
       </div>
 
       {/* Active sessions */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium uppercase tracking-wide text-[rgba(242,207,141,0.55)]">
+      <div className="rounded-xl border border-[rgba(242,207,141,0.2)] bg-[rgba(0,0,0,0.3)] overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(242,207,141,0.12)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(242,207,141,0.6)]">
             Активные сессии
           </p>
           {sessions.length > 1 && (
             <button
               onClick={revokeAll}
-              className="text-xs font-medium text-red-400/80 hover:text-red-300 transition-colors"
+              className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
             >
               Завершить все, кроме текущей
             </button>
           )}
         </div>
 
-        <div className="rounded-xl border border-[rgba(242,207,141,0.12)] overflow-hidden divide-y divide-[rgba(242,207,141,0.06)]">
+        <div className="divide-y divide-[rgba(242,207,141,0.1)]">
           {sessions.map((s) => (
-            <div key={s.id} className="flex items-center gap-4 px-4 py-3.5">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[rgba(242,207,141,0.15)] bg-[rgba(242,207,141,0.05)] text-[rgba(242,207,141,0.5)]">
+            <div key={s.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[rgba(242,207,141,0.03)] transition-colors">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-[rgba(242,207,141,0.2)] bg-[rgba(242,207,141,0.1)] text-[rgba(242,207,141,0.8)]">
                 {s.deviceType === 'mobile'
                   ? <Smartphone className="size-4" />
                   : <Monitor className="size-4" />
@@ -126,21 +102,21 @@ export function SecurityTab() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-[#fcecc8]">{s.device}</p>
+                  <p className="text-sm font-semibold text-[#fcecc8]">{s.device}</p>
                   {s.current && (
-                    <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400 uppercase tracking-wide">
+                    <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
                       Текущая
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[rgba(242,207,141,0.4)] mt-0.5">
+                <p className="text-xs text-[rgba(242,207,141,0.55)] mt-0.5">
                   {s.location} · {s.ip} · {s.lastActive}
                 </p>
               </div>
               {!s.current && (
                 <button
                   onClick={() => revokeSession(s.id)}
-                  className="flex items-center gap-1 rounded-lg border border-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400/70 hover:border-red-400/40 hover:text-red-300 transition-colors"
+                  className="flex items-center gap-1.5 rounded-lg border border-red-500/35 bg-red-900/15 px-3 py-1.5 text-xs font-medium text-red-400 hover:border-red-400/60 hover:bg-red-900/25 hover:text-red-300 transition-colors"
                 >
                   <LogOut className="size-3.5" />
                   Завершить

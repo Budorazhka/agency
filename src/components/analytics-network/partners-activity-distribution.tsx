@@ -145,7 +145,7 @@ export function PartnersActivityDistribution({ partners, period, onPeriodChange,
                 </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4 px-3 pb-4 pt-2 sm:flex-row sm:items-center sm:gap-6 sm:px-4">
-                <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[260px] shrink-0 sm:mx-0 sm:max-w-[280px]">
+                <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[300px] shrink-0 sm:mx-0 sm:max-w-[320px]">
                     <PieChart>
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Pie
@@ -154,8 +154,8 @@ export function PartnersActivityDistribution({ partners, period, onPeriodChange,
                             nameKey="label"
                             cx="50%"
                             cy="50%"
-                            innerRadius="32%"
-                            outerRadius="48%"
+                            innerRadius="42%"
+                            outerRadius="65%"
                             strokeWidth={0}
                         >
                             {distribution.map((item) => (
@@ -182,15 +182,19 @@ export function PartnersActivityDistribution({ partners, period, onPeriodChange,
                                             >
                                                 <tspan
                                                     x={viewBox.cx}
-                                                    y={viewBox.cy}
-                                                    className="fill-slate-900 text-3xl font-semibold sm:text-4xl"
+                                                    y={(viewBox.cy || 0) - 10}
+                                                    fontSize={28}
+                                                    fontWeight={600}
+                                                    fill="#0f172a"
                                                 >
                                                     {centerPercent}%
                                                 </tspan>
                                                 <tspan
                                                     x={viewBox.cx}
-                                                    y={(viewBox.cy || 0) + 20}
-                                                    className="fill-slate-700 text-xs font-medium sm:text-sm"
+                                                    y={(viewBox.cy || 0) + 16}
+                                                    fontSize={13}
+                                                    fontWeight={500}
+                                                    fill="#475569"
                                                 >
                                                     {centerLabel}
                                                 </tspan>

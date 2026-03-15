@@ -15,10 +15,7 @@ import { SettingsPage } from '@/components/settings/SettingsPage'
 import { LeadsAdminPage } from '@/components/leads/LeadsAdminPage'
 import { LeadsPokerPage } from '@/components/leads/LeadsPokerPage'
 import { RuntimeErrorBoundary } from '@/components/common/RuntimeErrorBoundary'
-import { RegistrationSelector } from '@/components/onboarding/RegistrationSelector'
 import { AgencyOnboarding } from '@/components/onboarding/AgencyOnboarding'
-import { RealtorOnboarding } from '@/components/onboarding/RealtorOnboarding'
-import { DeveloperOnboarding } from '@/components/onboarding/DeveloperOnboarding'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { LMSPage } from '@/components/lms/LMSPage'
 import { PersonnelPage } from '@/components/personnel/PersonnelPage'
@@ -91,10 +88,8 @@ createRoot(document.getElementById('root')!).render(
                 <Route element={<PublicLayout />}>
                   <Route path="/" element={<EntryRoute />} />
                   <Route path="/login" element={<EntryRoute />} />
-                  <Route path="/register" element={<RegistrationSelector />} />
+                  <Route path="/register" element={<AgencyOnboarding />} />
                   <Route path="/register/agency" element={<AgencyOnboarding />} />
-                  <Route path="/register/realtor" element={<RealtorOnboarding />} />
-                  <Route path="/register/developer" element={<DeveloperOnboarding />} />
                 </Route>
 
                 {/* Protected dashboard routes — require auth */}

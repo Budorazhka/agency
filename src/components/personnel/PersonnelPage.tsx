@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { UserPlus, Phone, Mail, Calendar, X, Pencil, Trash2, Users } from 'lucide-react'
-import { useAuth } from '@/context/AuthContext'
+import { UserPlus, Phone, Mail, Calendar, X, Pencil, Trash2, Users, ShieldOff, ShieldCheck } from 'lucide-react'
+import { useAuth, MOCK_USERS } from '@/context/AuthContext'
 import {
   MOCK_EMPLOYEES,
   ROLE_LABELS,
   type Employee,
   type EmployeeRole,
 } from '@/data/personnel-mock'
+import { ROLE_LABEL } from '@/lib/permissions'
+import type { UserRole } from '@/types/auth'
 
 // ─── Цвета ролей ──────────────────────────────────────────────────────────────
 
@@ -329,13 +331,138 @@ function EmployeeForm({ initial, employees, onSave, onCancel }: {
   )
 }
 
+// ─── Цвета ролей для управления командой ──────────────────────────────────────
+
+const MGMT_ROLE_STYLE: Record<UserRole, { accent: string; badge: string; text: string }> = {
+  owner:    { accent: '#f2cf8d', badge: 'rgba(242,207,141,0.15)', text: '#f2cf8d' },
+  director: { accent: '#7ec8e3', badge: 'rgba(126,200,227,0.15)', text: '#7ec8e3' },
+  rop:      { accent: '#f4b96a', badge: 'rgba(244,185,106,0.15)', text: '#f4b96a' },
+  marketer: { accent: '#c084fc', badge: 'rgba(192,132,252,0.15)', text: '#c084fc' },
+  manager:  { accent: '#6fcf97', badge: 'rgba(111,207,151,0.15)', text: '#6fcf97' },
+}
+
+// ─── Вкладка управления аккаунтами ────────────────────────────────────────────
+
+function AccountManagementTab({ currentUserId }: { currentUserId: string }) {
+  const { toggleBlockUser, isUserBlocked } = useAuth()
+  const agencyUsers = MOCK_USERS.filter((u) => u.accountType === 'agency')
+
+  return (
+    <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{
+        padding: '12px 16px',
+        borderRadius: 10,
+        border: '1px solid rgba(244,185,106,0.3)',
+        background: 'rgba(244,185,106,0.07)',
+        fontSize: 12,
+        color: 'rgba(244,185,106,0.9)',
+        marginBottom: 4,
+      }}>
+        Заблокированный сотрудник не сможет войти в систему. Все его данные сохраняются.
+      </div>
+
+      {agencyUsers.map((user) => {
+        const isSelf = user.id === currentUserId
+        const blocked = isUserBlocked(user.id)
+        const style = MGMT_ROLE_STYLE[user.role as UserRole] ?? MGMT_ROLE_STYLE.manager
+        const initials = user.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+
+        return (
+          <div
+            key={user.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              padding: '12px 16px',
+              borderRadius: 12,
+              border: `1px solid ${blocked ? 'rgba(252,129,129,0.25)' : 'rgba(229,196,136,0.15)'}`,
+              background: blocked ? 'rgba(252,129,129,0.05)' : 'rgba(255,255,255,0.03)',
+              opacity: blocked ? 0.75 : 1,
+              transition: 'all 0.15s',
+            }}
+          >
+            {/* Аватар */}
+            <div style={{
+              width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+              background: `radial-gradient(circle at 35% 35%, ${style.badge}, rgba(0,0,0,0.3))`,
+              border: `1.5px solid ${style.accent}50`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 15, fontWeight: 800, color: style.accent,
+            }}>
+              {initials}
+            </div>
+
+            {/* Инфо */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#f7ecd4' }}>{user.name}</span>
+                <span style={{
+                  fontSize: 9, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: style.text, background: style.badge,
+                  border: `1px solid ${style.accent}40`,
+                  borderRadius: 5, padding: '2px 7px',
+                }}>
+                  {ROLE_LABEL[user.role as UserRole]}
+                </span>
+                {blocked && (
+                  <span style={{
+                    fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    color: '#fc8181', background: 'rgba(252,129,129,0.12)',
+                    border: '1px solid rgba(252,129,129,0.3)',
+                    borderRadius: 5, padding: '2px 7px',
+                  }}>
+                    Заблокирован
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 11, color: 'rgba(247,236,212,0.4)', marginTop: 2, display: 'block' }}>
+                @{user.login}
+              </span>
+            </div>
+
+            {/* Кнопка */}
+            <button
+              disabled={isSelf}
+              onClick={() => toggleBlockUser(user.id)}
+              title={isSelf ? 'Нельзя заблокировать себя' : blocked ? 'Разблокировать' : 'Заблокировать'}
+              style={{
+                height: 34, paddingInline: 14, borderRadius: 8,
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 12, fontWeight: 600, cursor: isSelf ? 'not-allowed' : 'pointer',
+                opacity: isSelf ? 0.35 : 1,
+                border: blocked
+                  ? '1px solid rgba(111,207,151,0.4)'
+                  : '1px solid rgba(252,129,129,0.35)',
+                background: blocked
+                  ? 'rgba(111,207,151,0.08)'
+                  : 'rgba(252,129,129,0.08)',
+                color: blocked ? '#6fcf97' : '#fc8181',
+                transition: 'all 0.15s',
+                flexShrink: 0,
+              }}
+            >
+              {blocked
+                ? <><ShieldCheck size={13} /> Разблокировать</>
+                : <><ShieldOff size={13} /> Заблокировать</>
+              }
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ─── Главная страница ──────────────────────────────────────────────────────────
 
 export function PersonnelPage() {
   const { currentUser } = useAuth()
   const userRole = currentUser?.role ?? 'manager'
   const canEdit = userRole === 'owner' || userRole === 'director'
+  const isOwner = userRole === 'owner'
 
+  const [activeTab, setActiveTab] = useState<'org' | 'management'>('org')
   const [employees, setEmployees] = useState<Employee[]>(MOCK_EMPLOYEES)
   const [selected, setSelected] = useState<Employee | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -373,42 +500,77 @@ export function PersonnelPage() {
             </div>
             <div>
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(243,225,188,0.65)', margin: 0 }}>КОМАНДА</p>
-              <p style={{ fontSize: 17, fontWeight: 700, color: '#fff4d7', margin: '2px 0 0', letterSpacing: '0.02em' }}>Оргструктура</p>
+              <p style={{ fontSize: 17, fontWeight: 700, color: '#fff4d7', margin: '2px 0 0', letterSpacing: '0.02em' }}>
+                {activeTab === 'org' ? 'Оргструктура' : 'Управление командой'}
+              </p>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, color: 'rgba(247,236,212,0.45)' }}>{employees.length} сотрудников</span>
-            {canEdit && !showForm && !editTarget && (
-              <button onClick={() => setShowForm(true)} style={{ height: 34, paddingInline: 14, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid rgba(242,207,141,0.38)', background: 'rgba(242,207,141,0.1)', color: '#f2cf8d', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                <UserPlus size={14} /> Добавить
-              </button>
+            {/* Табы — только для owner */}
+            {isOwner && (
+              <div style={{ display: 'flex', borderRadius: 8, border: '1px solid rgba(229,196,136,0.2)', overflow: 'hidden' }}>
+                {(['org', 'management'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      height: 30, paddingInline: 14, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: 'none',
+                      background: activeTab === tab ? 'rgba(242,207,141,0.15)' : 'transparent',
+                      color: activeTab === tab ? '#f2cf8d' : 'rgba(247,236,212,0.4)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {tab === 'org' ? 'Оргструктура' : 'Управление'}
+                  </button>
+                ))}
+              </div>
+            )}
+            {activeTab === 'org' && (
+              <>
+                <span style={{ fontSize: 12, color: 'rgba(247,236,212,0.45)' }}>{employees.length} сотрудников</span>
+                {canEdit && !showForm && !editTarget && (
+                  <button onClick={() => setShowForm(true)} style={{ height: 34, paddingInline: 14, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid rgba(242,207,141,0.38)', background: 'rgba(242,207,141,0.1)', color: '#f2cf8d', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                    <UserPlus size={14} /> Добавить
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
 
-        {/* Form */}
-        {(showForm || editTarget) && (
-          <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(229,196,136,0.13)', background: 'rgba(5,28,22,0.7)', backdropFilter: 'blur(8px)', flexShrink: 0 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(243,225,188,0.55)', marginBottom: 12 }}>
-              {editTarget ? 'Редактировать сотрудника' : 'Новый сотрудник'}
-            </p>
-            <EmployeeForm
-              initial={editTarget ? { name: editTarget.name, role: editTarget.role, position: editTarget.position, managerId: editTarget.managerId ?? '', phone: editTarget.phone ?? '', email: editTarget.email ?? '', hireDate: editTarget.hireDate ?? '' } : undefined}
-              employees={employees}
-              onSave={editTarget ? handleEdit : handleAdd}
-              onCancel={() => { setShowForm(false); setEditTarget(null) }}
-            />
-          </div>
-        )}
+        {activeTab === 'management' && isOwner
+          ? (
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <AccountManagementTab currentUserId={currentUser?.id ?? ''} />
+            </div>
+          ) : (
+            <>
+              {/* Form */}
+              {(showForm || editTarget) && (
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(229,196,136,0.13)', background: 'rgba(5,28,22,0.7)', backdropFilter: 'blur(8px)', flexShrink: 0 }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(243,225,188,0.55)', marginBottom: 12 }}>
+                    {editTarget ? 'Редактировать сотрудника' : 'Новый сотрудник'}
+                  </p>
+                  <EmployeeForm
+                    initial={editTarget ? { name: editTarget.name, role: editTarget.role, position: editTarget.position, managerId: editTarget.managerId ?? '', phone: editTarget.phone ?? '', email: editTarget.email ?? '', hireDate: editTarget.hireDate ?? '' } : undefined}
+                    employees={employees}
+                    onSave={editTarget ? handleEdit : handleAdd}
+                    onCancel={() => { setShowForm(false); setEditTarget(null) }}
+                  />
+                </div>
+              )}
 
-        {/* Tree */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '40px 40px 60px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 'max-content', gap: 0 }}>
-            {roots.map((root) => (
-              <OrgNode key={root.id} employee={root} allEmployees={employees} onSelect={setSelected} selectedId={selected?.id ?? null} />
-            ))}
-          </div>
-        </div>
+              {/* Tree */}
+              <div style={{ flex: 1, overflow: 'auto', padding: '40px 40px 60px', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 'max-content', gap: 0 }}>
+                  {roots.map((root) => (
+                    <OrgNode key={root.id} employee={root} allEmployees={employees} onSelect={setSelected} selectedId={selected?.id ?? null} />
+                  ))}
+                </div>
+              </div>
+            </>
+          )
+        }
       </div>
 
       {/* Drawer */}

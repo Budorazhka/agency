@@ -28,15 +28,15 @@ type ChannelKey = "calls" | "chats" | "selections";
 const chartConfig = {
     calls: {
         label: "Звонки",
-        color: "hsl(25, 95%, 53%)",
+        color: "hsl(22, 90%, 52%)",
     },
     chats: {
         label: "Чаты",
-        color: "hsl(187, 85%, 53%)",
+        color: "hsl(199, 89%, 48%)",
     },
     selections: {
         label: "Рассылки",
-        color: "hsl(330, 81%, 60%)",
+        color: "hsl(262, 72%, 58%)",
     },
 } satisfies ChartConfig;
 
@@ -52,20 +52,20 @@ const channelMeta: Record<
     calls: {
         label: "Звонки",
         Icon: Phone,
-        iconColor: "text-orange-500",
+        iconColor: "text-orange-600",
         iconBg: "bg-orange-500/10",
     },
     chats: {
         label: "Чаты",
         Icon: MessageCircle,
-        iconColor: "text-cyan-500",
-        iconBg: "bg-cyan-500/10",
+        iconColor: "text-sky-600",
+        iconBg: "bg-sky-500/10",
     },
     selections: {
         label: "Рассылки",
         Icon: LayoutList,
-        iconColor: "text-pink-500",
-        iconBg: "bg-pink-500/10",
+        iconColor: "text-violet-600",
+        iconBg: "bg-violet-500/10",
     },
 };
 
@@ -195,7 +195,7 @@ export function ActivityComposition({ data, className }: ActivityCompositionProp
                         <div className="mt-2 flex flex-wrap items-center gap-2.5">
                             <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                                 <div
-                                    className="h-full rounded-full bg-[hsl(280,65%,57%)] transition-all"
+                                    className="h-full rounded-full bg-blue-500 transition-all"
                                     style={{ width: `${Math.min(100, Math.max(0, touchToDeal))}%` }}
                                 />
                             </div>

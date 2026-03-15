@@ -4,7 +4,7 @@
  */
 
 /** Роль пользователя в системе */
-export type UserRole = 'owner' | 'director' | 'rop' | 'manager'
+export type UserRole = 'owner' | 'director' | 'rop' | 'marketer' | 'manager'
 
 /** Тип бизнес-аккаунта: четыре версии продукта — один вход, разные кабинеты */
 export type AccountType = 'agency' | 'developer' | 'realtor' | 'internal'
@@ -34,6 +34,8 @@ export type PermissionAction =
   | 'add_lead_source'       // Добавить источник лидов
   | 'view_all_stages'       // Видеть все стадии воронки
   | 'set_substitute'        // Назначить подменного дежурного
+  | 'view_lead_analytics'   // Аналитика лидов и рекламных кампаний
+  | 'block_account'         // Блокировка аккаунтов сотрудников (только собственник)
 
 /** Матрица прав: роль → список разрешённых действий */
 export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
@@ -49,6 +51,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'add_lead_source',
     'view_all_stages',
     'set_substitute',
+    'view_lead_analytics',
+    'block_account',
   ],
   director: [
     'manage_team',
@@ -61,12 +65,19 @@ export const ROLE_PERMISSIONS: Record<UserRole, PermissionAction[]> = {
     'add_lead_source',
     'view_all_stages',
     'set_substitute',
+    'view_lead_analytics',
   ],
   rop: [
     'change_distribution',
     'view_all_leads',
     'view_all_stages',
     'set_substitute',
+    'view_lead_analytics',
+  ],
+  marketer: [
+    'view_lead_analytics',
+    'view_all_stages',
+    'add_lead_source',
   ],
   manager: [
     'view_all_stages',
@@ -86,4 +97,6 @@ export const PERMISSION_DENIED_REASON: Record<PermissionAction, string> = {
   add_lead_source: 'Доступно с уровня Директора',
   view_all_stages: 'Доступно всем',
   set_substitute: 'Доступно с уровня РОПа',
+  view_lead_analytics: 'Доступно с уровня РОПа и для Маркетолога',
+  block_account: 'Только для Собственника',
 }

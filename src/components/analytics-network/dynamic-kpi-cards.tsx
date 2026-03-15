@@ -29,57 +29,57 @@ const fullKpiConfig = [
         key: "addedListings" as const,
         label: "Новые объекты",
         icon: Home,
-        iconColor: "text-emerald-500",
-        iconBg: "bg-emerald-500/10",
+        iconColor: "text-amber-600",
+        iconBg: "bg-amber-500/10",
     },
     {
         key: "addedLeads" as const,
         label: "Новые лиды",
         icon: UserCheck,
-        iconColor: "text-emerald-500",
-        iconBg: "bg-emerald-500/10",
+        iconColor: "text-blue-600",
+        iconBg: "bg-blue-500/10",
     },
     {
         key: "addedLevel1Referrals" as const,
         label: "Добавлено рефералов L1",
         icon: UserPlus,
-        iconColor: "text-blue-500",
-        iconBg: "bg-blue-500/10",
+        iconColor: "text-violet-600",
+        iconBg: "bg-violet-500/10",
     },
     {
         key: "addedLevel2Referrals" as const,
         label: "Добавлено рефералов L2",
         icon: Users,
-        iconColor: "text-indigo-500",
+        iconColor: "text-indigo-600",
         iconBg: "bg-indigo-500/10",
     },
     {
         key: "callClicks" as const,
         label: "Звонки",
         icon: Phone,
-        iconColor: "text-orange-500",
+        iconColor: "text-orange-600",
         iconBg: "bg-orange-500/10",
     },
     {
         key: "chatOpens" as const,
         label: "Чаты",
         icon: MessageCircle,
-        iconColor: "text-cyan-500",
-        iconBg: "bg-cyan-500/10",
+        iconColor: "text-sky-600",
+        iconBg: "bg-sky-500/10",
     },
     {
         key: "selectionsCreated" as const,
         label: "Рассылки",
         icon: LayoutList,
-        iconColor: "text-pink-500",
-        iconBg: "bg-pink-500/10",
+        iconColor: "text-violet-600",
+        iconBg: "bg-violet-500/10",
     },
     {
         key: "deals" as const,
         label: "Сделки",
         icon: Trophy,
-        iconColor: "text-amber-500",
-        iconBg: "bg-amber-500/10",
+        iconColor: "text-emerald-600",
+        iconBg: "bg-emerald-500/10",
     },
 ];
 
@@ -117,7 +117,7 @@ export function DynamicKpiCards({ data, todayData, periodLabel, variant = "full"
                         <Card key={kpi.key} className="p-4">
                             <CardContent className="flex min-h-[136px] flex-col gap-2 p-0">
                                 <div className="flex items-center justify-between">
-                                    <Badge className="max-w-[76%] bg-teal-100 text-teal-800 shadow-none text-sm font-semibold">
+                                    <Badge className="max-w-[76%] bg-slate-100 text-slate-700 shadow-none text-sm font-semibold border border-slate-200">
                                         +{todayValue.toLocaleString("ru-RU")} за сегодня
                                     </Badge>
                                     <div className={`rounded-md p-2 ${kpi.iconBg}`}>

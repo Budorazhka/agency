@@ -107,6 +107,9 @@ export type LeadEventType =
   | 'overdue'             // Просрочка задачи или этапа
   | 'assign'              // Смена менеджера
 
+/** Кто поставил задачу (только РОП, директор, собственник) */
+export type TaskSetByRole = 'rop' | 'director' | 'owner'
+
 /** Одна запись в истории лида */
 export interface LeadEvent {
   id: string
@@ -126,6 +129,11 @@ export interface LeadEvent {
     duration?: number // Длительность звонка (в секундах)
     deadline?: string // ISO дата для task_created или overdue
     taskName?: string // Название/описание задачи
+    /** Кто поставил задачу (РОП/директор/собственник) — для отображения «Задача поставлена: РОП Иванов» */
+    setByRole?: TaskSetByRole
+    /** Матрица Эйзенхауэра: срочность и важность */
+    eisenhowerUrgent?: boolean
+    eisenhowerImportant?: boolean
   }
 }
 

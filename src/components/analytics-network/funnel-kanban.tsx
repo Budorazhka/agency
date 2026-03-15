@@ -37,15 +37,15 @@ function getColumnTone({
 }) {
     if (columnId === "rejection") {
         return {
-            pill: "bg-blue-500/10 text-blue-700 dark:text-blue-300",
-            bar: "bg-blue-500",
+            pill: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
+            bar: "bg-rose-500",
         };
     }
 
     if (columnId === "success" || (boardId !== "sales" && isFinalColumn)) {
         return {
-            pill: "bg-yellow-400/20 text-yellow-700 dark:text-yellow-300",
-            bar: "bg-yellow-500",
+            pill: "bg-amber-400/20 text-amber-700 dark:text-amber-300",
+            bar: "bg-amber-500",
         };
     }
 

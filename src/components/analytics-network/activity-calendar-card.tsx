@@ -51,7 +51,7 @@ function getTrafficTone(total: number, isPast: boolean) {
         return {
             label: "Нет действий",
             className:
-                "bg-rose-200 border-rose-300 text-slate-900 hover:bg-rose-300 dark:bg-rose-800 dark:border-rose-700 dark:text-slate-100",
+                "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300",
         };
     }
 
@@ -60,7 +60,7 @@ function getTrafficTone(total: number, isPast: boolean) {
             return {
                 label: "Низкая активность (прошедший день)",
                 className:
-                    "bg-orange-200 border-orange-300 text-slate-900 hover:bg-orange-300 dark:bg-orange-700 dark:border-orange-600 dark:text-slate-100",
+                    "bg-amber-200 border-amber-300 text-slate-900 hover:bg-amber-300 dark:bg-amber-700 dark:border-amber-600 dark:text-slate-100",
             };
         }
         return {
@@ -304,7 +304,7 @@ export function ActivityCalendarCard({
                         </span>
                     )}
                     <span className="inline-flex items-center gap-2">
-                        <span className="h-3 w-3 rounded-full bg-rose-400" />
+                        <span className="h-3 w-3 rounded-full bg-slate-300 border border-slate-200" />
                         0 активностей
                     </span>
                     <span className="inline-flex items-center gap-2">
@@ -318,10 +318,6 @@ export function ActivityCalendarCard({
                     <span className="inline-flex items-center gap-2">
                         <span className="h-3 w-3 rounded-full bg-slate-400" />
                         Прошедшие дни
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                        <span className="h-3 w-3 rounded-full bg-slate-300" />
-                        Будущие дни
                     </span>
                 </div>
 

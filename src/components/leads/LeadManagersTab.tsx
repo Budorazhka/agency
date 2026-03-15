@@ -1,20 +1,10 @@
 import { useState } from 'react'
-import { Pencil, UserPlus } from 'lucide-react'
+import { Pencil, Trash2, UserPlus, Info } from 'lucide-react'
 import { useLeads } from '@/context/LeadsContext'
 import { useRolePermissions } from '@/hooks/useRolePermissions'
 import type { LeadManager, LeadSource } from '@/types/leads'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 const SOURCE_LABELS: Record<LeadSource, string> = {
   primary: 'Первичка',
@@ -22,6 +12,11 @@ const SOURCE_LABELS: Record<LeadSource, string> = {
   rent: 'Аренда',
   ad_campaigns: 'Рекламные кампании',
 }
+
+const FIELD =
+  'w-full rounded-xl border border-[rgba(242,207,141,0.2)] bg-[rgba(0,0,0,0.25)] px-4 py-2.5 text-sm text-[#fcecc8] placeholder:text-[rgba(242,207,141,0.3)] outline-none focus:border-[rgba(242,207,141,0.5)] focus:ring-1 focus:ring-[rgba(242,207,141,0.2)] transition-all'
+
+const LABEL = 'block text-xs font-medium uppercase tracking-wide text-[rgba(242,207,141,0.55)] mb-1.5'
 
 export function LeadManagersTab() {
   const { state, dispatch } = useLeads()
@@ -42,186 +37,165 @@ export function LeadManagersTab() {
   }
 
   const openAdd = () => {
-    setEditingId(null)
-    setLogin('')
-    setName('')
-    setSourceTypes(['primary'])
-    setOpen(true)
+    setEditingId(null); setLogin(''); setName(''); setSourceTypes(['primary']); setOpen(true)
   }
 
   const openEdit = (m: LeadManager) => {
-    setEditingId(m.id)
-    setLogin(m.login)
-    setName(m.name)
-    setSourceTypes([...m.sourceTypes])
-    setOpen(true)
+    setEditingId(m.id); setLogin(m.login); setName(m.name); setSourceTypes([...m.sourceTypes]); setOpen(true)
   }
 
-  const handleAdd = () => {
+  const handleSave = () => {
     if (!login.trim() || !name.trim() || sourceTypes.length === 0) return
-    const newManager: LeadManager = {
-      id: `lm-${Date.now()}`,
-      login: login.trim(),
-      name: name.trim(),
-      sourceTypes: [...sourceTypes],
+    if (isEdit && editingId) {
+      dispatch({ type: 'UPDATE_LEAD_MANAGER', managerId: editingId, patch: { login: login.trim(), name: name.trim(), sourceTypes: [...sourceTypes] } })
+    } else {
+      dispatch({ type: 'ADD_LEAD_MANAGER', manager: { id: `lm-${Date.now()}`, login: login.trim(), name: name.trim(), sourceTypes: [...sourceTypes] } })
     }
-    dispatch({ type: 'ADD_LEAD_MANAGER', manager: newManager })
-    setLogin('')
-    setName('')
-    setSourceTypes(['primary'])
-    setOpen(false)
-  }
-
-  const handleSaveEdit = () => {
-    if (!editingId || !login.trim() || !name.trim() || sourceTypes.length === 0) return
-    dispatch({
-      type: 'UPDATE_LEAD_MANAGER',
-      managerId: editingId,
-      patch: { login: login.trim(), name: name.trim(), sourceTypes: [...sourceTypes] },
-    })
-    setEditingId(null)
-    setLogin('')
-    setName('')
-    setSourceTypes(['primary'])
-    setOpen(false)
+    closeDialog()
   }
 
   const closeDialog = () => {
-    setOpen(false)
-    setEditingId(null)
-    setLogin('')
-    setName('')
-    setSourceTypes(['primary'])
+    setOpen(false); setEditingId(null); setLogin(''); setName(''); setSourceTypes(['primary'])
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 max-w-2xl">
+
       {!canManageTeam && (
-        <p className="text-sm text-slate-600">
-          Добавление и редактирование менеджеров доступно только директору.
-        </p>
+        <div className="flex items-start gap-3 rounded-xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.15)] px-4 py-3">
+          <Info className="size-4 shrink-0 mt-0.5 text-[rgba(242,207,141,0.45)]" />
+          <p className="text-sm text-[rgba(242,207,141,0.55)]">
+            Добавление и редактирование менеджеров доступно только директору.
+          </p>
+        </div>
       )}
 
-      <Card className="leads-card">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base font-semibold">Менеджеры по лидам</CardTitle>
+      {/* Panel */}
+      <div className="rounded-xl border border-[rgba(242,207,141,0.15)] bg-[rgba(0,0,0,0.15)] overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[rgba(242,207,141,0.1)]">
+          <h3 className="font-semibold text-[#fcecc8]">Менеджеры по лидам</h3>
           {canManageTeam && (
-            <Button onClick={openAdd} className="rounded-full gap-2" size="sm">
+            <button
+              type="button"
+              onClick={openAdd}
+              className="flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400/60 transition-colors"
+            >
               <UserPlus className="size-4" />
               Добавить менеджера
-            </Button>
+            </button>
           )}
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            {leadManagers.map((m) => (
-              <li
-                key={m.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3 transition-colors hover:border-slate-200 hover:bg-slate-50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-medium text-slate-700">
-                    {m.name.charAt(0)}
-                  </div>
-                  <div>
-                    <span className="font-medium text-slate-900">{m.name}</span>
-                    <span className="ml-2 text-sm text-slate-500">{m.login}</span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {m.sourceTypes.map((s) => (
-                    <Badge key={s} variant="secondary" className="font-normal">
-                      {SOURCE_LABELS[s]}
-                    </Badge>
-                  ))}
-                  {canManageTeam && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1.5 text-slate-600 hover:text-slate-900"
-                        onClick={() => openEdit(m)}
-                      >
-                        <Pencil className="size-3.5" />
-                        Редактировать
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-slate-500 hover:text-red-600"
-                        onClick={() =>
-                          dispatch({ type: 'REMOVE_LEAD_MANAGER', managerId: m.id })
-                        }
-                      >
-                        Удалить
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Dialog open={open} onOpenChange={(open) => !open && closeDialog()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{isEdit ? 'Редактировать менеджера' : 'Добавить менеджера'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Логин (email)</Label>
-              <Input
-                value={login}
-                onChange={(e) => setLogin(e.target.value)}
-                placeholder="manager@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Имя</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Иван Менеджеров"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Очереди (типы аккаунтов / права)</Label>
-              <div className="flex flex-wrap gap-2">
-                {(['primary', 'secondary', 'rent', 'ad_campaigns'] as LeadSource[]).map(
-                  (s) => (
-                    <Button
-                      key={s}
+        {/* List */}
+        <ul className="divide-y divide-[rgba(242,207,141,0.07)]">
+          {leadManagers.map((m) => (
+            <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-[rgba(242,207,141,0.04)]">
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[rgba(242,207,141,0.1)] text-sm font-semibold text-[#fcecc8]">
+                  {m.name.charAt(0)}
+                </div>
+                <div>
+                  <span className="font-medium text-[#fcecc8]">{m.name}</span>
+                  <span className="ml-2 text-sm text-[rgba(242,207,141,0.45)]">{m.login}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {m.sourceTypes.map((s) => (
+                  <span key={s} className="rounded-full border border-[rgba(242,207,141,0.2)] bg-[rgba(242,207,141,0.08)] px-2.5 py-0.5 text-xs text-[rgba(242,207,141,0.75)]">
+                    {SOURCE_LABELS[s]}
+                  </span>
+                ))}
+                {canManageTeam && (
+                  <>
+                    <button
                       type="button"
-                      variant={sourceTypes.includes(s) ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => toggleSource(s)}
+                      onClick={() => openEdit(m)}
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-[rgba(242,207,141,0.55)] hover:text-[#fcecc8] hover:bg-[rgba(242,207,141,0.07)] transition-colors"
                     >
-                      {SOURCE_LABELS[s]}
-                    </Button>
-                  )
+                      <Pencil className="size-3.5" />
+                      Редактировать
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: 'REMOVE_LEAD_MANAGER', managerId: m.id })}
+                      className="rounded-lg px-2.5 py-1.5 text-sm text-[rgba(242,207,141,0.4)] hover:text-red-400 hover:bg-red-900/15 transition-colors"
+                    >
+                      Удалить
+                    </button>
+                  </>
                 )}
               </div>
-              <p className="text-xs text-slate-500">
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Dialog */}
+      <Dialog open={open} onOpenChange={(v) => !v && closeDialog()}>
+        <DialogContent showCloseButton={false} className="max-w-md rounded-2xl border border-[rgba(242,207,141,0.16)] bg-[linear-gradient(180deg,rgba(9,36,28,0.99),rgba(6,20,16,0.98))] p-0 shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[rgba(242,207,141,0.1)] px-6 py-4">
+            <h2 className="text-base font-semibold text-[#fcecc8]">
+              {isEdit ? 'Редактировать менеджера' : 'Добавить менеджера'}
+            </h2>
+          </div>
+
+          <div className="space-y-4 px-6 py-5">
+            <div>
+              <label className={LABEL}>Логин (email)</label>
+              <input value={login} onChange={(e) => setLogin(e.target.value)} placeholder="manager@example.com" className={FIELD} />
+            </div>
+            <div>
+              <label className={LABEL}>Имя</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Иван Менеджеров" className={FIELD} />
+            </div>
+            <div>
+              <label className={LABEL}>Очереди лидов</label>
+              <div className="flex flex-wrap gap-2">
+                {(['primary', 'secondary', 'rent', 'ad_campaigns'] as LeadSource[]).map((s) => {
+                  const active = sourceTypes.includes(s)
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => toggleSource(s)}
+                      className={cn(
+                        'rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all',
+                        active
+                          ? 'border-emerald-400/60 bg-emerald-400/12 text-emerald-300'
+                          : 'border-[rgba(242,207,141,0.2)] bg-[rgba(242,207,141,0.06)] text-[rgba(242,207,141,0.55)] hover:border-[rgba(242,207,141,0.4)] hover:text-[#fcecc8]'
+                      )}
+                    >
+                      {SOURCE_LABELS[s]}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-[rgba(242,207,141,0.35)]">
                 Выберите очереди, к которым у менеджера есть доступ.
               </p>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
+
+          <div className="flex items-center justify-end gap-2 border-t border-[rgba(242,207,141,0.1)] px-6 py-4">
+            <button
+              type="button"
+              onClick={closeDialog}
+              className="rounded-full border border-[rgba(242,207,141,0.2)] px-5 py-2 text-sm font-medium text-[rgba(242,207,141,0.65)] hover:border-[rgba(242,207,141,0.4)] hover:text-[#fcecc8] transition-colors"
+            >
               Отмена
-            </Button>
-            {isEdit ? (
-              <Button onClick={handleSaveEdit} disabled={!login.trim() || !name.trim() || sourceTypes.length === 0}>
-                Сохранить
-              </Button>
-            ) : (
-              <Button onClick={handleAdd} disabled={!login.trim() || !name.trim() || sourceTypes.length === 0}>
-                Добавить
-              </Button>
-            )}
-          </DialogFooter>
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!login.trim() || !name.trim() || sourceTypes.length === 0}
+              className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {isEdit ? 'Сохранить' : 'Добавить'}
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
