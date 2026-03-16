@@ -20,7 +20,7 @@ import { useLeads } from '@/context/LeadsContext'
 import { getDashboardBlocks } from '@/config/dashboard-blocks'
 import type { DashboardBlockConfig } from '@/config/dashboard-blocks'
 import { getAnalyticsData } from '@/lib/mock/analytics-network'
-import { LEAD_STAGES } from '@/data/leads-mock'
+import { LEAD_STAGES, LEAD_STAGE_COLUMN } from '@/data/leads-mock'
 import { cn } from '@/lib/utils'
 import {
   INITIAL_CAMPAIGNS,
@@ -77,6 +77,14 @@ function isToday(iso: string): boolean {
 
 function isWithin7Days(iso: string): boolean {
   return new Date(iso).getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000
+}
+
+function isWithin30Days(iso: string): boolean {
+  return new Date(iso).getTime() >= Date.now() - 30 * 24 * 60 * 60 * 1000
+}
+
+function isSuccessStage(stageId: string): boolean {
+  return LEAD_STAGE_COLUMN[stageId] === 'success' || stageId === 'deal'
 }
 
 function formatUsd(usd: number): string {
@@ -139,25 +147,35 @@ export function MainScreen() {
   const { state } = useLeads()
   const accountType = currentUser?.accountType ?? 'agency'
   const isMarketer = currentUser?.role === 'marketer'
+  const isManager = currentUser?.role === 'manager'
+  const managerId = isManager ? currentUser?.id ?? null : null
   const blocks = getDashboardBlocks(accountType)
+
+  const pool = managerId
+    ? state.leadPool.filter((l) => l.managerId === managerId)
+    : state.leadPool
 
   const weekAnalytics = getAnalyticsData('week')
   const monthAnalytics = getAnalyticsData('month')
 
-  const leadsToday   = state.leadPool.filter((l) => isToday(l.createdAt)).length
-  const leadsWeek    = state.leadPool.filter((l) => isWithin7Days(l.createdAt)).length
-  const listingsWeek = weekAnalytics.dynamicKpi.addedListings
-  const dealsMonth   = monthAnalytics.dynamicKpi.deals
-  const dealsTotal   = weekAnalytics.staticKpi.totalDeals
-  const pipelineUsd  = state.leadPool.reduce((s, l) => s + (l.commissionUsd ?? 0), 0)
-  const avgCommission = state.leadPool.length > 0 ? Math.round(pipelineUsd / state.leadPool.length) : 0
+  const leadsToday   = pool.filter((l) => isToday(l.createdAt)).length
+  const leadsWeek   = pool.filter((l) => isWithin7Days(l.createdAt)).length
+  const listingsWeek = isManager ? 0 : weekAnalytics.dynamicKpi.addedListings
+  const dealsMonth   = isManager
+    ? pool.filter((l) => isSuccessStage(l.stageId) && isWithin30Days(l.createdAt)).length
+    : monthAnalytics.dynamicKpi.deals
+  const dealsTotal   = isManager
+    ? pool.filter((l) => isSuccessStage(l.stageId)).length
+    : weekAnalytics.staticKpi.totalDeals
+  const pipelineUsd  = pool.reduce((s, l) => s + (l.commissionUsd ?? 0), 0)
+  const avgCommission = pool.length > 0 ? Math.round(pipelineUsd / pool.length) : 0
   const marketingStats = getCampaignSummary(INITIAL_CAMPAIGNS)
 
-  const recentLeads  = [...state.leadPool]
+  const recentLeads  = [...pool]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 6)
-  const overdueTasks = state.leadPool.filter((l) => l.taskOverdue)
-  const pendingTasks = state.leadPool.filter((l) => l.hasTask && !l.taskOverdue)
+  const overdueTasks = pool.filter((l) => l.taskOverdue)
+  const pendingTasks = pool.filter((l) => l.hasTask && !l.taskOverdue)
 
   return (
     <div className="luxury-main-wrap">
@@ -182,11 +200,13 @@ export function MainScreen() {
                 rows={[{ value: leadsToday, label: 'сегодня' }, { value: leadsWeek, label: 'за 7 дней' }]}
                 accentClass="luxury-card-accent-sapphire"
               />
-              <StatCard
-                icon={Building2} title="Объекты"
-                rows={[{ value: `+${Math.round(listingsWeek / 7)}`, label: 'добавлено сегодня' }, { value: `+${listingsWeek}`, label: 'за 7 дней' }]}
-                accentClass="luxury-card-accent-ruby"
-              />
+              {!isManager && (
+                <StatCard
+                  icon={Building2} title="Объекты"
+                  rows={[{ value: `+${Math.round(listingsWeek / 7)}`, label: 'добавлено сегодня' }, { value: `+${listingsWeek}`, label: 'за 7 дней' }]}
+                  accentClass="luxury-card-accent-ruby"
+                />
+              )}
               <StatCard
                 icon={Handshake} title="Сделки"
                 rows={[{ value: dealsMonth, label: 'за месяц' }, { value: dealsTotal, label: 'всего закрыто' }]}

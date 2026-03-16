@@ -2,35 +2,40 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Building2 } from 'lucide-react'
 import { useAuth, MOCK_USERS } from '@/context/AuthContext'
-import { useFormValidation } from '@/hooks/useFormValidation'
-import { loginSchema, type LoginFormData } from '@/lib/validation/schemas'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Form, Field, FormActions } from '@/components/ui/Form'
 import { ROLE_LABEL, ROLE_COLOR } from '@/lib/permissions'
 import type { UserRole } from '@/types/auth'
 import { cn } from '@/lib/utils'
 
 const ROLES: UserRole[] = ['owner', 'director', 'rop', 'marketer', 'manager']
 
-export function LoginPage() {
+export function LoginPageSimple() {
   const { login, enterAs } = useAuth()
   const navigate = useNavigate()
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
+  const [loginVal, setLoginVal] = useState('')
+  const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const form = useFormValidation(loginSchema, {
-    onSubmit: async (data: LoginFormData) => {
-      const result = login(data.login, data.password)
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    setTimeout(() => {
+      const result = login(loginVal, password)
+      setLoading(false)
       if (result === 'ok') {
         navigate('/dashboard', { replace: true })
       } else if (result === 'blocked') {
-        form.setFieldError('login', 'Аккаунт заблокирован. Обратитесь к руководителю.')
+        setError('Аккаунт заблокирован. Обратитесь к руководителю.')
       } else {
-        form.setFieldError('login', 'Неверный логин или пароль')
+        setError('Неверный логин или пароль')
       }
-    },
-  })
+    }, 400)
+  }
 
   function handleEnterAs() {
     if (selectedRole) {
@@ -42,7 +47,7 @@ export function LoginPage() {
   function quickLogin(userLogin: string) {
     const result = login(userLogin, '1')
     if (result === 'ok') navigate('/dashboard', { replace: true })
-    else if (result === 'blocked') form.setFieldError('login', 'Аккаунт заблокирован. Обратитесь к руководителю.')
+    else if (result === 'blocked') setError('Аккаунт заблокирован. Обратитесь к руководителю.')
   }
 
   return (
@@ -71,10 +76,7 @@ export function LoginPage() {
             </div>
           </div>
 
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
-            Роль
-          </p>
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="mb-6 flex flex-wrap gap-2">
             {ROLES.map((role) => (
               <button
                 key={role}
@@ -107,32 +109,33 @@ export function LoginPage() {
         <div className="w-full max-w-sm">
           <h2 className="text-lg font-semibold text-foreground mb-1">Вход по логину</h2>
           <p className="text-sm text-muted-foreground mb-6">Логин и пароль для доступа к кабинету</p>
-          <Form onSubmit={form.handleSubmit}>
-            <Field
-              label="Логин"
-              description="owner / director / rop / marketer / manager"
-              error={form.getFieldError('login')}
-              className="mb-4"
-            >
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label htmlFor="login" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Логин
+              </label>
               <Input
-                {...form.register('login')}
+                id="login"
                 autoComplete="username"
                 placeholder="owner / director / rop / marketer / manager"
-                disabled={form.formState.isSubmitting}
+                value={loginVal}
+                onChange={(e) => setLoginVal(e.target.value)}
+                disabled={loading}
               />
-            </Field>
-            <Field
-              label="Пароль"
-              error={form.getFieldError('password')}
-              className="mb-4"
-            >
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Пароль
+              </label>
               <div className="relative">
                 <Input
-                  {...form.register('password')}
+                  id="password"
                   type={showPass ? 'text' : 'password'}
                   autoComplete="current-password"
                   placeholder="Пароль"
-                  disabled={form.formState.isSubmitting}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -142,17 +145,16 @@ export function LoginPage() {
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-            </Field>
-            <FormActions>
-              <Button
-                type="submit"
-                disabled={form.formState.isSubmitting}
-                className="w-full"
-              >
-                {form.formState.isSubmitting ? 'Вход...' : 'Войти'}
-              </Button>
-            </FormActions>
-          </Form>
+            </div>
+            {error && (
+              <div className="text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                {error}
+              </div>
+            )}
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Вход...' : 'Войти'}
+            </Button>
+          </form>
           <p className="text-xs text-muted-foreground mt-4">Пароль для демо-пользователей: 1</p>
           <div className="mt-4 pt-4 border-t border-slate-200">
             <p className="text-xs text-muted-foreground mb-2">Быстрый вход:</p>

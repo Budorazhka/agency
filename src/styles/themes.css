@@ -1,0 +1,112 @@
+/* Тема Felt (сукно) - для лидов и internal пользователей */
+.app-theme-felt {
+  /* Основные цвета felt темы */
+  --felt-bg-primary: oklch(0.11 0.02 28);
+  --felt-bg-secondary: oklch(0.14 0.018 30);
+  --felt-text-primary: oklch(0.91 0.01 85);
+  --felt-text-secondary: oklch(0.82 0.015 80);
+  --felt-text-muted: oklch(0.65 0.02 75);
+  
+  /* Акцентные цвета */
+  --felt-accent-gold: oklch(0.82 0.08 75);
+  --felt-accent-gold-hover: oklch(0.87 0.09 75);
+  --felt-accent-amber: oklch(0.75 0.08 65);
+  
+  /* Фоновые элементы */
+  --felt-surface: oklch(0.13 0.015 29);
+  --felt-surface-elevated: oklch(0.15 0.018 31);
+  --felt-border: oklch(0.22 0.02 32);
+  
+  /* Состояния */
+  --felt-hover-bg: oklch(0.68 0.043 18, 0.5);
+  --felt-active-bg: oklch(0.82 0.064 75, 0.22);
+  --felt-selected-bg: oklch(0.82 0.064 75, 0.15);
+}
+
+/* Стили для felt темы */
+.app-theme-felt .sidebar-leads {
+  background-color: var(--felt-bg-primary);
+  border-color: var(--felt-border);
+  color: var(--felt-text-primary);
+}
+
+.app-theme-felt .sidebar-leads button {
+  color: var(--felt-text-secondary);
+}
+
+.app-theme-felt .sidebar-leads button:hover {
+  background-color: var(--felt-hover-bg);
+  color: var(--felt-text-primary);
+}
+
+.app-theme-felt .sidebar-leads button[data-active="true"] {
+  background-color: var(--felt-active-bg);
+  color: var(--felt-accent-gold);
+}
+
+/* Стандартная тема */
+.app-theme-standard {
+  /* Использует переменные из index.css */
+}
+
+/* Утилитарные классы для тем */
+.felt-text-primary { color: var(--felt-text-primary); }
+.felt-text-secondary { color: var(--felt-text-secondary); }
+.felt-text-muted { color: var(--felt-text-muted); }
+.felt-bg-primary { background-color: var(--felt-bg-primary); }
+.felt-bg-secondary { background-color: var(--felt-bg-secondary); }
+.felt-surface { background-color: var(--felt-surface); }
+.felt-border { border-color: var(--felt-border); }
+.felt-accent-gold { color: var(--felt-accent-gold); }
+.felt-accent-gold-bg { background-color: var(--felt-accent-gold); }
+
+/* Hover состояния для felt темы */
+.felt-hover:hover {
+  background-color: var(--felt-hover-bg);
+}
+
+.felt-hover-bg:hover {
+  background-color: var(--felt-hover-bg);
+}
+
+/* Активные состояния для felt темы */
+.felt-active {
+  background-color: var(--felt-active-bg);
+  color: var(--felt-accent-gold);
+}
+
+/* Транзишены для плавных переходов между темами */
+.app-theme-felt,
+.app-theme-standard {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Адаптивные цвета для разных контейнеров */
+.app-theme-felt .luxury-stat-card,
+.app-theme-felt .luxury-nav-card,
+.app-theme-felt .luxury-widget-card {
+  background-color: var(--felt-surface);
+  border-color: var(--felt-border);
+  color: var(--felt-text-primary);
+}
+
+/* Кастомные цвета для gem акцентов в felt теме */
+.luxury-card-accent-ruby.felt-accent {
+  --gem-color: oklch(0.65 0.15 20);
+}
+
+.luxury-card-accent-sapphire.felt-accent {
+  --gem-color: oklch(0.65 0.12 240);
+}
+
+.luxury-card-accent-emerald.felt-accent {
+  --gem-color: oklch(0.65 0.14 160);
+}
+
+.luxury-card-accent-topaz.felt-accent {
+  --gem-color: oklch(0.65 0.13 60);
+}
+
+.luxury-card-accent-amethyst.felt-accent {
+  --gem-color: oklch(0.65 0.16 280);
+}

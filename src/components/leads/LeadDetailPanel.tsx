@@ -12,8 +12,6 @@ import {
   CheckCircle2,
   Building2,
   ListTodo,
-  Zap,
-  Bookmark,
 } from 'lucide-react'
 import { useLeads } from '@/context/LeadsContext'
 import { LEAD_STAGES, LEAD_STAGE_COLUMN } from '@/data/leads-mock'
@@ -27,6 +25,44 @@ const TASK_SET_BY_ROLE_LABEL: Record<TaskSetByRole, string> = {
   owner: 'Собственник',
   director: 'Директор',
   rop: 'РОП',
+}
+
+function UrgentMarkIcon({ active }: { active: boolean }) {
+  const color = active ? '#ff3b30' : '#475569'
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="size-3 shrink-0"
+      fill={active ? color : 'none'}
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+    </svg>
+  )
+}
+
+function ImportantMarkIcon({ active }: { active: boolean }) {
+  const color = active ? '#f2a900' : '#475569'
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="size-3 shrink-0"
+      fill={active ? color : 'none'}
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+    </svg>
+  )
 }
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -282,7 +318,7 @@ export function LeadDetailPanel({
                           ? "bg-rose-50 text-rose-700 border-rose-300"
                           : "bg-slate-100 text-slate-500 border-slate-200"
                       )}>
-                        <Zap className={cn("size-3", event.payload.eisenhowerUrgent === true ? "fill-rose-600 text-rose-600" : "text-slate-400")} />
+                        <UrgentMarkIcon active={event.payload.eisenhowerUrgent === true} />
                         {event.payload.eisenhowerUrgent === true ? "Срочно" : "Не срочно"}
                       </span>
                       <span className={cn(
@@ -291,7 +327,7 @@ export function LeadDetailPanel({
                           ? "bg-yellow-50 text-yellow-800 border-yellow-300"
                           : "bg-slate-100 text-slate-500 border-slate-200"
                       )}>
-                        <Bookmark className={cn("size-3", event.payload.eisenhowerImportant === true ? "fill-yellow-600 text-yellow-700" : "text-slate-400")} />
+                        <ImportantMarkIcon active={event.payload.eisenhowerImportant === true} />
                         {event.payload.eisenhowerImportant === true ? "Важно" : "Не важно"}
                       </span>
                     </div>

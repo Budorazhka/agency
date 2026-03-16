@@ -4,6 +4,8 @@ import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { DashboardProvider } from '@/context/DashboardContext'
 import { LeadsProvider } from '@/context/LeadsContext'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { MockProvider } from '@/providers/MockProvider'
 import App from './App'
 import { MainScreen } from '@/components/dashboard/MainScreen'
 import { OverviewGuard } from '@/components/dashboard/OverviewGuard'
@@ -15,6 +17,14 @@ import { SettingsPage } from '@/components/settings/SettingsPage'
 import { LeadsAdminPage } from '@/components/leads/LeadsAdminPage'
 import { LeadsPokerPage } from '@/components/leads/LeadsPokerPage'
 import { RuntimeErrorBoundary } from '@/components/common/RuntimeErrorBoundary'
+import { 
+  LeadsErrorBoundary, 
+  DashboardErrorBoundary, 
+  ProductErrorBoundary, 
+  PersonnelErrorBoundary, 
+  SettingsErrorBoundary 
+} from '@/components/common/ModuleErrorBoundary'
+import { LoadingProvider } from '@/providers/LoadingProvider'
 import { AgencyOnboarding } from '@/components/onboarding/AgencyOnboarding'
 import { LoginPage } from '@/components/auth/LoginPage'
 import { LMSPage } from '@/components/lms/LMSPage'
@@ -26,10 +36,10 @@ import '@fontsource/montserrat/600.css'
 import '@fontsource/montserrat/700.css'
 import './index.css'
 
-/** Защищённый маршрут — редиректит на корневой вход если нет авторизации */
+// Защищённый маршрут — если пользователь не авторизован, редиректит на /
 function RequireAuth() {
   const { currentUser } = useAuth()
-  // Используем Navigate для редиректа — useNavigate недоступен вне Router
+  // Navigate вместо useNavigate — хук нельзя использовать вне Router
   if (!currentUser) return <Navigate to="/" replace />
   return <Outlet />
 }
@@ -80,79 +90,91 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RootErrorBoundary>
       <AuthProvider>
-        <DashboardProvider>
-          <LeadsProvider>
+        <MockProvider>
+          <LoadingProvider>
             <HashRouter>
-              <Routes>
-                {/* Public routes — without sidebar */}
-                <Route element={<PublicLayout />}>
-                  <Route path="/" element={<EntryRoute />} />
-                  <Route path="/login" element={<EntryRoute />} />
-                  <Route path="/register" element={<AgencyOnboarding />} />
-                  <Route path="/register/agency" element={<AgencyOnboarding />} />
-                </Route>
+            <ThemeProvider>
+              <DashboardProvider>
+                <LeadsProvider>
+                  <Routes>
+                    {/* Публичные маршруты без сайдбара: вход, регистрация */}
+                    <Route element={<PublicLayout />}>
+                      <Route path="/" element={<EntryRoute />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<AgencyOnboarding />} />
+                      <Route path="/register/agency" element={<AgencyOnboarding />} />
+                    </Route>
 
-                {/* Protected dashboard routes — require auth */}
-                <Route element={<RequireAuth />}>
-                  <Route path="/dashboard" element={<App />}>
-                    <Route index element={<MainScreen />} />
-                    <Route path="overview" element={<OverviewGuard />} />
-                    <Route
-                      path="product"
-                      element={
-                        <RuntimeErrorBoundary>
-                          <ProductPage />
-                        </RuntimeErrorBoundary>
-                      }
-                    />
-                    <Route path="personnel" element={<PersonnelPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="city/:cityId" element={<CityPage />} />
-                    <Route path="city/:cityId/mailings" element={<CityMailingsPage />} />
-                    <Route
-                      path="city/:cityId/partner"
-                      element={
-                        <RuntimeErrorBoundary>
-                          <SupremeOwnerDashboardPage />
-                        </RuntimeErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="city/:cityId/partner/:partnerId"
-                      element={
-                        <RuntimeErrorBoundary>
-                          <SupremeOwnerDashboardPage />
-                        </RuntimeErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="leads"
-                      element={
-                        <RuntimeErrorBoundary>
-                          <LeadsAdminPage />
-                        </RuntimeErrorBoundary>
-                      }
-                    />
-                    <Route
-                      path="leads/poker"
-                      element={
-                        <RuntimeErrorBoundary>
-                          <LeadsPokerPage />
-                        </RuntimeErrorBoundary>
-                      }
-                    />
-                    <Route path="leads/analytics" element={<Navigate to="/dashboard/leads" replace />} />
-                    <Route path="lms" element={<LMSPage />} />
-                    <Route path="my-properties" element={<MyPropertiesPage />} />
-                  </Route>
-                </Route>
+                    {/* Защищённые маршруты дашборда — требуют авторизации */}
+                    <Route element={<RequireAuth />}>
+                      <Route path="/dashboard" element={<App />}>
+                        <Route index element={<DashboardErrorBoundary><MainScreen /></DashboardErrorBoundary>} />
+                        <Route path="overview" element={<DashboardErrorBoundary><OverviewGuard /></DashboardErrorBoundary>} />
+                        <Route
+                          path="product"
+                          element={
+                            <ProductErrorBoundary>
+                              <RuntimeErrorBoundary>
+                                <ProductPage />
+                              </RuntimeErrorBoundary>
+                            </ProductErrorBoundary>
+                          }
+                        />
+                        <Route path="personnel" element={<PersonnelErrorBoundary><PersonnelPage /></PersonnelErrorBoundary>} />
+                        <Route path="settings" element={<SettingsErrorBoundary><SettingsPage /></SettingsErrorBoundary>} />
+                        <Route path="city/:cityId" element={<CityPage />} />
+                        <Route path="city/:cityId/mailings" element={<CityMailingsPage />} />
+                        <Route
+                          path="city/:cityId/partner"
+                          element={
+                            <RuntimeErrorBoundary>
+                              <SupremeOwnerDashboardPage />
+                            </RuntimeErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="city/:cityId/partner/:partnerId"
+                          element={
+                            <RuntimeErrorBoundary>
+                              <SupremeOwnerDashboardPage />
+                            </RuntimeErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="leads"
+                          element={
+                            <LeadsErrorBoundary>
+                              <RuntimeErrorBoundary>
+                                <LeadsAdminPage />
+                              </RuntimeErrorBoundary>
+                            </LeadsErrorBoundary>
+                          }
+                        />
+                        <Route
+                          path="leads/poker"
+                          element={
+                            <LeadsErrorBoundary>
+                              <RuntimeErrorBoundary>
+                                <LeadsPokerPage />
+                              </RuntimeErrorBoundary>
+                            </LeadsErrorBoundary>
+                          }
+                        />
+                        <Route path="leads/analytics" element={<Navigate to="/dashboard/leads" replace />} />
+                        <Route path="lms" element={<LMSPage />} />
+                        <Route path="my-properties" element={<MyPropertiesPage />} />
+                      </Route>
+                    </Route>
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </HashRouter>
-          </LeadsProvider>
-        </DashboardProvider>
+                    {/* Любой неизвестный маршрут — на главную */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </LeadsProvider>
+              </DashboardProvider>
+            </ThemeProvider>
+          </HashRouter>
+          </LoadingProvider>
+        </MockProvider>
       </AuthProvider>
     </RootErrorBoundary>
   </StrictMode>,
