@@ -612,7 +612,7 @@ export function SupremeOwnerDashboardPage() {
           <GamesBreakPanel cityId={cityId} />
         </div>
 
-        <div className="flex w-full min-h-0 flex-col gap-4 self-start">
+        <div className="flex min-w-0 w-full min-h-0 flex-col gap-4 self-start">
           {selectedCabinet?.scope === "partner" && partnerViewMode === "analytics" ? (
             <div className="flex flex-col gap-4">
               <div className="grid items-start gap-4 xl:grid-cols-12">

@@ -22,10 +22,8 @@ export function PropertyCard({ property, readOnly, onEdit, onDelete }: PropertyC
         {property.photo && (
           <img src={property.photo} alt={property.title} className="size-full object-cover" />
         )}
-        <div className="absolute bottom-2 left-2">
+        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1 min-w-0">
           <SaleStatusBadge status={property.status} />
-        </div>
-        <div className="absolute bottom-2 right-2">
           <ConditionBadge state={condition} />
         </div>
       </div>

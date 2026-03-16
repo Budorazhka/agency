@@ -1110,7 +1110,7 @@ function StageDeckPile({
             </button>
           </div>
         )}
-        <div className="mb-3 flex h-6 items-center justify-center gap-1.5">
+        <div className="relative z-20 mb-3 flex h-6 items-center justify-center gap-1.5">
           {showControls ? (
             <>
               <button
