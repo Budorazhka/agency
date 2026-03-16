@@ -4,7 +4,7 @@ import path from 'path'
 import tailwindcss from '@tailwindcss/postcss'
 
 export default defineConfig({
-  base: '/LastDance/',
+  base: '/agency/',
   plugins: [react()],
   css: {
     postcss: {
