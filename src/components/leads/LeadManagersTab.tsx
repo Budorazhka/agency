@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Trash2, UserPlus, Info } from 'lucide-react'
+import { Pencil, UserPlus, Info } from 'lucide-react'
 import { useLeads } from '@/context/LeadsContext'
 import { useRolePermissions } from '@/hooks/useRolePermissions'
 import type { LeadManager, LeadSource } from '@/types/leads'

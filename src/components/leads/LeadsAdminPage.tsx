@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ShieldX, ArrowLeft, ArrowRight, Layers, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
+import { ShieldX, ArrowRight, Layers, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import './leads-secret-table.css'
 import { Button } from '@/components/ui/button'
